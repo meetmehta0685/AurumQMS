@@ -1,4 +1,4 @@
-export type UserRole = 'patient' | 'doctor' | 'admin';
+export type UserRole = 'patient' | 'doctor' | 'admin' | 'guest' | 'staff' | 'lab' | 'pharma';
 export type ResourceType = 'provider' | 'room' | 'device';
 export type AppointmentModality = 'in_person' | 'telehealth' | 'hybrid';
 export type QueueStatus = 'waiting' | 'called' | 'completed' | 'no_show';
@@ -230,6 +230,65 @@ export interface Prescription {
   frequency: string;
   duration: string;
   notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LabTestOrder {
+  id: string;
+  appointment_id: string | null;
+  medical_record_id: string | null;
+  patient_id: string;
+  doctor_id: string;
+  test_name: string;
+  instructions: string | null;
+  status: 'ordered' | 'sample_collected' | 'processing' | 'reported' | 'cancelled';
+  ordered_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LabReport {
+  id: string;
+  order_id: string;
+  patient_id: string;
+  doctor_id: string;
+  report_title: string;
+  report_url: string | null;
+  report_text: string | null;
+  reported_at: string;
+  verified_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PharmacyDispense {
+  id: string;
+  prescription_id: string | null;
+  patient_id: string;
+  doctor_id: string;
+  medicine_name: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  quantity: number;
+  dispense_status: 'pending' | 'dispensed' | 'cancelled';
+  dispensed_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DischargeSummary {
+  id: string;
+  appointment_id: string;
+  patient_id: string;
+  doctor_id: string;
+  summary_text: string | null;
+  discharge_status: 'draft' | 'discharged';
+  discharged_at: string | null;
+  generated_pdf_url: string | null;
+  generated_at: string | null;
   created_at: string;
   updated_at: string;
 }

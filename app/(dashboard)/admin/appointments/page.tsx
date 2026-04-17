@@ -1,18 +1,24 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -20,12 +26,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import Link from 'next/link';
-import { ArrowLeft, Calendar, Search, Clock, User, Stethoscope } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { useEffect, useState } from 'react';
-import { format } from 'date-fns';
+} from "@/components/ui/table";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Calendar,
+  Search,
+  Clock,
+  User,
+  Stethoscope,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
+import { format } from "date-fns";
 
 interface AppointmentWithDetails {
   id: string;
@@ -47,20 +60,25 @@ interface AppointmentWithDetails {
 }
 
 export default function AdminAppointmentsPage() {
-  const { profile, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const supabase = createClient();
   const [loadingData, setLoadingData] = useState(true);
-  const [appointments, setAppointments] = useState<AppointmentWithDetails[]>([]);
-  const [filteredAppointments, setFilteredAppointments] = useState<AppointmentWithDetails[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [dateFilter, setDateFilter] = useState<string>('');
+  const [appointments, setAppointments] = useState<AppointmentWithDetails[]>(
+    [],
+  );
+  const [filteredAppointments, setFilteredAppointments] = useState<
+    AppointmentWithDetails[]
+  >([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("");
 
   const fetchAppointments = async () => {
     try {
       const { data, error } = await supabase
-        .from('appointments')
-        .select(`
+        .from("appointments")
+        .select(
+          `
           id,
           appointment_date,
           appointment_time,
@@ -72,12 +90,13 @@ export default function AdminAppointmentsPage() {
             specialization,
             profile:profiles!doctors_profile_id_fkey(full_name)
           )
-        `)
-        .order('appointment_date', { ascending: false })
-        .order('appointment_time', { ascending: true });
+        `,
+        )
+        .order("appointment_date", { ascending: false })
+        .order("appointment_time", { ascending: true });
 
       if (error) {
-        console.error('Error fetching appointments:', error);
+        console.error("Error fetching appointments:", error);
         return;
       }
 
@@ -85,19 +104,25 @@ export default function AdminAppointmentsPage() {
       const transformedData = (data || []).map((apt: any) => ({
         ...apt,
         patient: Array.isArray(apt.patient) ? apt.patient[0] : apt.patient,
-        doctor: Array.isArray(apt.doctor) ? {
-          ...apt.doctor[0],
-          profile: Array.isArray(apt.doctor[0]?.profile) ? apt.doctor[0].profile[0] : apt.doctor[0]?.profile
-        } : {
-          ...apt.doctor,
-          profile: Array.isArray(apt.doctor?.profile) ? apt.doctor.profile[0] : apt.doctor?.profile
-        },
+        doctor: Array.isArray(apt.doctor)
+          ? {
+              ...apt.doctor[0],
+              profile: Array.isArray(apt.doctor[0]?.profile)
+                ? apt.doctor[0].profile[0]
+                : apt.doctor[0]?.profile,
+            }
+          : {
+              ...apt.doctor,
+              profile: Array.isArray(apt.doctor?.profile)
+                ? apt.doctor.profile[0]
+                : apt.doctor?.profile,
+            },
       }));
 
       setAppointments(transformedData);
       setFilteredAppointments(transformedData);
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setLoadingData(false);
     }
@@ -113,21 +138,22 @@ export default function AdminAppointmentsPage() {
     // Apply search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(apt => 
-        apt.patient?.full_name?.toLowerCase().includes(term) ||
-        apt.doctor?.profile?.full_name?.toLowerCase().includes(term) ||
-        apt.doctor?.specialization?.toLowerCase().includes(term)
+      filtered = filtered.filter(
+        (apt) =>
+          apt.patient?.full_name?.toLowerCase().includes(term) ||
+          apt.doctor?.profile?.full_name?.toLowerCase().includes(term) ||
+          apt.doctor?.specialization?.toLowerCase().includes(term),
       );
     }
 
     // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(apt => apt.status === statusFilter);
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((apt) => apt.status === statusFilter);
     }
 
     // Apply date filter
     if (dateFilter) {
-      filtered = filtered.filter(apt => apt.appointment_date === dateFilter);
+      filtered = filtered.filter((apt) => apt.appointment_date === dateFilter);
     }
 
     setFilteredAppointments(filtered);
@@ -136,27 +162,43 @@ export default function AdminAppointmentsPage() {
   const updateAppointmentStatus = async (id: string, newStatus: string) => {
     try {
       const { error } = await supabase
-        .from('appointments')
+        .from("appointments")
         .update({ status: newStatus })
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
       await fetchAppointments();
     } catch (error) {
-      console.error('Error updating status:', error);
+      console.error("Error updating status:", error);
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed':
-        return <Badge className="bg-chart-1/10 text-chart-1 hover:bg-chart-1/10">Confirmed</Badge>;
-      case 'pending':
-        return <Badge className="bg-chart-3/10 text-chart-3 hover:bg-chart-3/10">Pending</Badge>;
-      case 'completed':
-        return <Badge className="bg-chart-4/10 text-chart-4 hover:bg-chart-4/10">Completed</Badge>;
-      case 'cancelled':
-        return <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/10">Cancelled</Badge>;
+      case "confirmed":
+        return (
+          <Badge className="bg-chart-1/10 text-chart-1 hover:bg-chart-1/10">
+            Confirmed
+          </Badge>
+        );
+      case "pending":
+        return (
+          <Badge className="bg-chart-3/10 text-chart-3 hover:bg-chart-3/10">
+            Pending
+          </Badge>
+        );
+      case "completed":
+        return (
+          <Badge className="bg-chart-4/10 text-chart-4 hover:bg-chart-4/10">
+            Completed
+          </Badge>
+        );
+      case "cancelled":
+        return (
+          <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/10">
+            Cancelled
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -185,8 +227,12 @@ export default function AdminAppointmentsPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">All Appointments</h1>
-            <p className="text-muted-foreground">Monitor and manage all hospital appointments</p>
+            <h1 className="text-2xl font-bold text-foreground">
+              All Appointments
+            </h1>
+            <p className="text-muted-foreground">
+              Monitor and manage all hospital appointments
+            </p>
           </div>
         </div>
 
@@ -221,12 +267,12 @@ export default function AdminAppointmentsPage() {
                 onChange={(e) => setDateFilter(e.target.value)}
                 placeholder="Filter by date"
               />
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
-                  setSearchTerm('');
-                  setStatusFilter('all');
-                  setDateFilter('');
+                  setSearchTerm("");
+                  setStatusFilter("all");
+                  setDateFilter("");
                 }}
               >
                 Clear Filters
@@ -243,7 +289,8 @@ export default function AdminAppointmentsPage() {
               Appointments ({filteredAppointments.length})
             </CardTitle>
             <CardDescription>
-              Showing {filteredAppointments.length} of {appointments.length} appointments
+              Showing {filteredAppointments.length} of {appointments.length}{" "}
+              appointments
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -274,8 +321,12 @@ export default function AdminAppointmentsPage() {
                               <User className="w-4 h-4 text-chart-4" />
                             </div>
                             <div>
-                              <p className="font-medium">{apt.patient?.full_name || 'Unknown'}</p>
-                              <p className="text-xs text-muted-foreground">{apt.patient?.email}</p>
+                              <p className="font-medium">
+                                {apt.patient?.full_name || "Unknown"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {apt.patient?.email}
+                              </p>
                             </div>
                           </div>
                         </TableCell>
@@ -285,8 +336,13 @@ export default function AdminAppointmentsPage() {
                               <Stethoscope className="w-4 h-4 text-chart-1" />
                             </div>
                             <div>
-                              <p className="font-medium">Dr. {apt.doctor?.profile?.full_name || 'Unknown'}</p>
-                              <p className="text-xs text-muted-foreground">{apt.doctor?.specialization}</p>
+                              <p className="font-medium">
+                                Dr.{" "}
+                                {apt.doctor?.profile?.full_name || "Unknown"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {apt.doctor?.specialization}
+                              </p>
                             </div>
                           </div>
                         </TableCell>
@@ -294,8 +350,15 @@ export default function AdminAppointmentsPage() {
                           <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-muted-foreground" />
                             <div>
-                              <p className="font-medium">{format(new Date(apt.appointment_date), 'MMM d, yyyy')}</p>
-                              <p className="text-xs text-muted-foreground">{apt.appointment_time}</p>
+                              <p className="font-medium">
+                                {format(
+                                  new Date(apt.appointment_date),
+                                  "MMM d, yyyy",
+                                )}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {apt.appointment_time}
+                              </p>
                             </div>
                           </div>
                         </TableCell>
@@ -308,18 +371,26 @@ export default function AdminAppointmentsPage() {
                         </TableCell>
                         <TableCell>{getStatusBadge(apt.status)}</TableCell>
                         <TableCell className="text-right">
-                          <Select 
-                            value={apt.status} 
-                            onValueChange={(value) => updateAppointmentStatus(apt.id, value)}
+                          <Select
+                            value={apt.status}
+                            onValueChange={(value) =>
+                              updateAppointmentStatus(apt.id, value)
+                            }
                           >
                             <SelectTrigger className="w-32">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="confirmed">Confirmed</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                              <SelectItem value="confirmed">
+                                Confirmed
+                              </SelectItem>
+                              <SelectItem value="completed">
+                                Completed
+                              </SelectItem>
+                              <SelectItem value="cancelled">
+                                Cancelled
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>

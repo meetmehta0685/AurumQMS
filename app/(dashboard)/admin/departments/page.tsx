@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -24,12 +30,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import Link from 'next/link';
-import { ArrowLeft, Plus, Building2, Edit, Trash2, Users } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+} from "@/components/ui/table";
+import Link from "next/link";
+import { ArrowLeft, Plus, Building2, Edit, Trash2, Users } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Department {
   id: string;
@@ -40,41 +46,43 @@ interface Department {
 }
 
 export default function AdminDepartmentsPage() {
-  const { profile, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const supabase = createClient();
   const [loadingData, setLoadingData] = useState(true);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
 
   // Form state
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
 
   const fetchDepartments = async () => {
     try {
       const { data: depts } = await supabase
-        .from('departments')
-        .select('*')
-        .order('name');
+        .from("departments")
+        .select("*")
+        .order("name");
 
       if (depts) {
         // Get doctor counts for each department
         const deptsWithCounts = await Promise.all(
           depts.map(async (dept) => {
             const { count } = await supabase
-              .from('doctors')
-              .select('*', { count: 'exact', head: true })
-              .eq('department_id', dept.id);
+              .from("doctors")
+              .select("*", { count: "exact", head: true })
+              .eq("department_id", dept.id);
             return { ...dept, doctor_count: count || 0 };
-          })
+          }),
         );
         setDepartments(deptsWithCounts);
       }
     } catch (error) {
-      console.error('Error fetching departments:', error);
+      console.error("Error fetching departments:", error);
     } finally {
       setLoadingData(false);
     }
@@ -85,34 +93,34 @@ export default function AdminDepartmentsPage() {
   }, [supabase]);
 
   const resetForm = () => {
-    setName('');
-    setDescription('');
+    setName("");
+    setDescription("");
     setEditingDepartment(null);
   };
 
   const addDepartment = async () => {
     if (!name.trim()) {
-      toast.error('Department name is required');
+      toast.error("Department name is required");
       return;
     }
 
     setSaving(true);
 
     try {
-      const { error } = await supabase.from('departments').insert({
+      const { error } = await supabase.from("departments").insert({
         name: name.trim(),
         description: description.trim() || null,
       });
 
       if (error) throw error;
 
-      toast.success('Department added successfully');
+      toast.success("Department added successfully");
       setShowAddDialog(false);
       resetForm();
       await fetchDepartments();
     } catch (error: any) {
-      console.error('Error adding department:', error);
-      toast.error(error.message || 'Failed to add department');
+      console.error("Error adding department:", error);
+      toast.error(error.message || "Failed to add department");
     } finally {
       setSaving(false);
     }
@@ -120,7 +128,7 @@ export default function AdminDepartmentsPage() {
 
   const updateDepartment = async () => {
     if (!editingDepartment || !name.trim()) {
-      toast.error('Department name is required');
+      toast.error("Department name is required");
       return;
     }
 
@@ -128,22 +136,22 @@ export default function AdminDepartmentsPage() {
 
     try {
       const { error } = await supabase
-        .from('departments')
+        .from("departments")
         .update({
           name: name.trim(),
           description: description.trim() || null,
         })
-        .eq('id', editingDepartment.id);
+        .eq("id", editingDepartment.id);
 
       if (error) throw error;
 
-      toast.success('Department updated successfully');
+      toast.success("Department updated successfully");
       setShowEditDialog(false);
       resetForm();
       await fetchDepartments();
     } catch (error: any) {
-      console.error('Error updating department:', error);
-      toast.error(error.message || 'Failed to update department');
+      console.error("Error updating department:", error);
+      toast.error(error.message || "Failed to update department");
     } finally {
       setSaving(false);
     }
@@ -151,7 +159,7 @@ export default function AdminDepartmentsPage() {
 
   const deleteDepartment = async (dept: Department) => {
     if (dept.doctor_count && dept.doctor_count > 0) {
-      toast.error('Cannot delete department with assigned doctors');
+      toast.error("Cannot delete department with assigned doctors");
       return;
     }
 
@@ -160,22 +168,25 @@ export default function AdminDepartmentsPage() {
     }
 
     try {
-      const { error } = await supabase.from('departments').delete().eq('id', dept.id);
+      const { error } = await supabase
+        .from("departments")
+        .delete()
+        .eq("id", dept.id);
 
       if (error) throw error;
 
-      toast.success('Department deleted successfully');
+      toast.success("Department deleted successfully");
       await fetchDepartments();
     } catch (error: any) {
-      console.error('Error deleting department:', error);
-      toast.error(error.message || 'Failed to delete department');
+      console.error("Error deleting department:", error);
+      toast.error(error.message || "Failed to delete department");
     }
   };
 
   const openEditDialog = (dept: Department) => {
     setEditingDepartment(dept);
     setName(dept.name);
-    setDescription(dept.description || '');
+    setDescription(dept.description || "");
     setShowEditDialog(true);
   };
 
@@ -203,8 +214,12 @@ export default function AdminDepartmentsPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Manage Departments</h1>
-              <p className="text-muted-foreground">Add and manage hospital departments</p>
+              <h1 className="text-2xl font-bold text-foreground">
+                Manage Departments
+              </h1>
+              <p className="text-muted-foreground">
+                Add and manage hospital departments
+              </p>
             </div>
           </div>
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -217,7 +232,9 @@ export default function AdminDepartmentsPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add New Department</DialogTitle>
-                <DialogDescription>Create a new hospital department</DialogDescription>
+                <DialogDescription>
+                  Create a new hospital department
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div>
@@ -240,11 +257,14 @@ export default function AdminDepartmentsPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAddDialog(false)}
+                >
                   Cancel
                 </Button>
                 <Button onClick={addDepartment} disabled={saving}>
-                  {saving ? 'Adding...' : 'Add Department'}
+                  {saving ? "Adding..." : "Add Department"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -259,7 +279,8 @@ export default function AdminDepartmentsPage() {
               All Departments
             </CardTitle>
             <CardDescription>
-              {departments.length} department{departments.length !== 1 ? 's' : ''} total
+              {departments.length} department
+              {departments.length !== 1 ? "s" : ""} total
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -287,7 +308,7 @@ export default function AdminDepartmentsPage() {
                     <TableRow key={dept.id}>
                       <TableCell className="font-medium">{dept.name}</TableCell>
                       <TableCell className="text-muted-foreground max-w-xs truncate">
-                        {dept.description || '-'}
+                        {dept.description || "-"}
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="gap-1">
@@ -309,7 +330,9 @@ export default function AdminDepartmentsPage() {
                             variant="ghost"
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => deleteDepartment(dept)}
-                            disabled={Boolean(dept.doctor_count && dept.doctor_count > 0)}
+                            disabled={Boolean(
+                              dept.doctor_count && dept.doctor_count > 0,
+                            )}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -328,7 +351,9 @@ export default function AdminDepartmentsPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Department</DialogTitle>
-              <DialogDescription>Update department information</DialogDescription>
+              <DialogDescription>
+                Update department information
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -351,11 +376,14 @@ export default function AdminDepartmentsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowEditDialog(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={updateDepartment} disabled={saving}>
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </DialogContent>

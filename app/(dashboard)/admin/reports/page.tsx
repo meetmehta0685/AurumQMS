@@ -1,26 +1,31 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
-import { 
-  ArrowLeft, 
-  BarChart3, 
-  Users, 
-  Calendar, 
-  Stethoscope, 
-  TrendingUp, 
-  TrendingDown,
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  BarChart3,
+  Users,
+  Calendar,
+  Stethoscope,
+  TrendingUp,
   Building2,
   Clock,
   CheckCircle,
-  XCircle
-} from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { useEffect, useState } from 'react';
+  XCircle,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
 
 interface ReportStats {
   totalAppointments: number;
@@ -49,7 +54,7 @@ interface DoctorStats {
 }
 
 export default function AdminReportsPage() {
-  const { profile, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const supabase = createClient();
   const [loadingData, setLoadingData] = useState(true);
   const [stats, setStats] = useState<ReportStats>({
@@ -71,15 +76,15 @@ export default function AdminReportsPage() {
     const fetchReportData = async () => {
       try {
         const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
-        
+        const todayStr = today.toISOString().split("T")[0];
+
         // Calculate week start (Monday) and month start
         const weekStart = new Date(today);
         weekStart.setDate(today.getDate() - today.getDay() + 1);
-        const weekStartStr = weekStart.toISOString().split('T')[0];
-        
+        const weekStartStr = weekStart.toISOString().split("T")[0];
+
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const monthStartStr = monthStart.toISOString().split('T')[0];
+        const monthStartStr = monthStart.toISOString().split("T")[0];
 
         // Fetch all data in parallel
         const [
@@ -94,16 +99,41 @@ export default function AdminReportsPage() {
           weekRes,
           monthRes,
         ] = await Promise.all([
-          supabase.from('appointments').select('*', { count: 'exact', head: true }),
-          supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
-          supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
-          supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-          supabase.from('doctors').select('*', { count: 'exact', head: true }),
-          supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'patient'),
-          supabase.from('departments').select('*', { count: 'exact', head: true }),
-          supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('appointment_date', todayStr),
-          supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('appointment_date', weekStartStr),
-          supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('appointment_date', monthStartStr),
+          supabase
+            .from("appointments")
+            .select("*", { count: "exact", head: true }),
+          supabase
+            .from("appointments")
+            .select("*", { count: "exact", head: true })
+            .eq("status", "completed"),
+          supabase
+            .from("appointments")
+            .select("*", { count: "exact", head: true })
+            .eq("status", "cancelled"),
+          supabase
+            .from("appointments")
+            .select("*", { count: "exact", head: true })
+            .eq("status", "pending"),
+          supabase.from("doctors").select("*", { count: "exact", head: true }),
+          supabase
+            .from("profiles")
+            .select("*", { count: "exact", head: true })
+            .eq("role", "patient"),
+          supabase
+            .from("departments")
+            .select("*", { count: "exact", head: true }),
+          supabase
+            .from("appointments")
+            .select("*", { count: "exact", head: true })
+            .eq("appointment_date", todayStr),
+          supabase
+            .from("appointments")
+            .select("*", { count: "exact", head: true })
+            .gte("appointment_date", weekStartStr),
+          supabase
+            .from("appointments")
+            .select("*", { count: "exact", head: true })
+            .gte("appointment_date", monthStartStr),
         ]);
 
         setStats({
@@ -121,18 +151,25 @@ export default function AdminReportsPage() {
 
         // Fetch department stats
         const { data: departments } = await supabase
-          .from('departments')
-          .select('id, name');
+          .from("departments")
+          .select("id, name");
 
         if (departments) {
           const deptStatsPromises = departments.map(async (dept) => {
             const [doctorCountRes, appointmentCountRes] = await Promise.all([
-              supabase.from('doctors').select('*', { count: 'exact', head: true }).eq('department_id', dept.id),
-              supabase.from('appointments')
-                .select('*, doctor:doctors!inner(department_id)', { count: 'exact', head: true })
-                .eq('doctor.department_id', dept.id),
+              supabase
+                .from("doctors")
+                .select("*", { count: "exact", head: true })
+                .eq("department_id", dept.id),
+              supabase
+                .from("appointments")
+                .select("*, doctor:doctors!inner(department_id)", {
+                  count: "exact",
+                  head: true,
+                })
+                .eq("doctor.department_id", dept.id),
             ]);
-            
+
             return {
               name: dept.name,
               doctorCount: doctorCountRes.count || 0,
@@ -141,13 +178,13 @@ export default function AdminReportsPage() {
           });
 
           const deptStats = await Promise.all(deptStatsPromises);
-          setDepartmentStats(deptStats.sort((a, b) => b.appointmentCount - a.appointmentCount));
+          setDepartmentStats(
+            deptStats.sort((a, b) => b.appointmentCount - a.appointmentCount),
+          );
         }
 
         // Fetch top doctors
-        const { data: doctors } = await supabase
-          .from('doctors')
-          .select(`
+        const { data: doctors } = await supabase.from("doctors").select(`
             id,
             specialization,
             profile:profiles!doctors_profile_id_fkey(full_name)
@@ -156,14 +193,23 @@ export default function AdminReportsPage() {
         if (doctors) {
           const doctorStatsPromises = doctors.map(async (doc: any) => {
             const [totalRes, completedRes] = await Promise.all([
-              supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('doctor_id', doc.id),
-              supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('doctor_id', doc.id).eq('status', 'completed'),
+              supabase
+                .from("appointments")
+                .select("*", { count: "exact", head: true })
+                .eq("doctor_id", doc.id),
+              supabase
+                .from("appointments")
+                .select("*", { count: "exact", head: true })
+                .eq("doctor_id", doc.id)
+                .eq("status", "completed"),
             ]);
-            
-            const profile = Array.isArray(doc.profile) ? doc.profile[0] : doc.profile;
-            
+
+            const profile = Array.isArray(doc.profile)
+              ? doc.profile[0]
+              : doc.profile;
+
             return {
-              name: profile?.full_name || 'Unknown',
+              name: profile?.full_name || "Unknown",
               specialization: doc.specialization,
               appointmentCount: totalRes.count || 0,
               completedCount: completedRes.count || 0,
@@ -171,11 +217,14 @@ export default function AdminReportsPage() {
           });
 
           const docStats = await Promise.all(doctorStatsPromises);
-          setDoctorStats(docStats.sort((a, b) => b.appointmentCount - a.appointmentCount).slice(0, 5));
+          setDoctorStats(
+            docStats
+              .sort((a, b) => b.appointmentCount - a.appointmentCount)
+              .slice(0, 5),
+          );
         }
-
       } catch (error) {
-        console.error('Error fetching report data:', error);
+        console.error("Error fetching report data:", error);
       } finally {
         setLoadingData(false);
       }
@@ -199,13 +248,19 @@ export default function AdminReportsPage() {
     );
   }
 
-  const completionRate = stats.totalAppointments > 0 
-    ? Math.round((stats.completedAppointments / stats.totalAppointments) * 100) 
-    : 0;
+  const completionRate =
+    stats.totalAppointments > 0
+      ? Math.round(
+          (stats.completedAppointments / stats.totalAppointments) * 100,
+        )
+      : 0;
 
-  const cancellationRate = stats.totalAppointments > 0 
-    ? Math.round((stats.cancelledAppointments / stats.totalAppointments) * 100) 
-    : 0;
+  const cancellationRate =
+    stats.totalAppointments > 0
+      ? Math.round(
+          (stats.cancelledAppointments / stats.totalAppointments) * 100,
+        )
+      : 0;
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -219,8 +274,12 @@ export default function AdminReportsPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Reports & Analytics</h1>
-            <p className="text-muted-foreground">Hospital performance insights and statistics</p>
+            <h1 className="text-2xl font-bold text-foreground">
+              Reports & Analytics
+            </h1>
+            <p className="text-muted-foreground">
+              Hospital performance insights and statistics
+            </p>
           </div>
         </div>
 
@@ -234,7 +293,9 @@ export default function AdminReportsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-chart-4">{stats.totalAppointments}</div>
+              <div className="text-3xl font-bold text-chart-4">
+                {stats.totalAppointments}
+              </div>
             </CardContent>
           </Card>
 
@@ -246,7 +307,9 @@ export default function AdminReportsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-chart-1">{stats.totalDoctors}</div>
+              <div className="text-3xl font-bold text-chart-1">
+                {stats.totalDoctors}
+              </div>
             </CardContent>
           </Card>
 
@@ -258,7 +321,9 @@ export default function AdminReportsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-chart-2">{stats.totalPatients}</div>
+              <div className="text-3xl font-bold text-chart-2">
+                {stats.totalPatients}
+              </div>
             </CardContent>
           </Card>
 
@@ -270,7 +335,9 @@ export default function AdminReportsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-chart-3">{stats.totalDepartments}</div>
+              <div className="text-3xl font-bold text-chart-3">
+                {stats.totalDepartments}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -285,7 +352,9 @@ export default function AdminReportsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.todayAppointments}</div>
+              <div className="text-2xl font-bold">
+                {stats.todayAppointments}
+              </div>
               <p className="text-sm text-muted-foreground">appointments</p>
             </CardContent>
           </Card>
@@ -298,7 +367,9 @@ export default function AdminReportsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.thisWeekAppointments}</div>
+              <div className="text-2xl font-bold">
+                {stats.thisWeekAppointments}
+              </div>
               <p className="text-sm text-muted-foreground">appointments</p>
             </CardContent>
           </Card>
@@ -311,7 +382,9 @@ export default function AdminReportsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.thisMonthAppointments}</div>
+              <div className="text-2xl font-bold">
+                {stats.thisMonthAppointments}
+              </div>
               <p className="text-sm text-muted-foreground">appointments</p>
             </CardContent>
           </Card>
@@ -325,20 +398,25 @@ export default function AdminReportsPage() {
                 <CheckCircle className="w-5 h-5 text-chart-1" />
                 Completion Rate
               </CardTitle>
-              <CardDescription>Appointments successfully completed</CardDescription>
+              <CardDescription>
+                Appointments successfully completed
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
-                <div className="text-4xl font-bold text-chart-1">{completionRate}%</div>
+                <div className="text-4xl font-bold text-chart-1">
+                  {completionRate}%
+                </div>
                 <div className="flex-1">
                   <div className="h-4 bg-muted rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-chart-1 transition-all duration-500"
                       style={{ width: `${completionRate}%` }}
                     />
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    {stats.completedAppointments} of {stats.totalAppointments} appointments
+                    {stats.completedAppointments} of {stats.totalAppointments}{" "}
+                    appointments
                   </p>
                 </div>
               </div>
@@ -351,20 +429,25 @@ export default function AdminReportsPage() {
                 <XCircle className="w-5 h-5 text-destructive" />
                 Cancellation Rate
               </CardTitle>
-              <CardDescription>Appointments cancelled by patients</CardDescription>
+              <CardDescription>
+                Appointments cancelled by patients
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
-                <div className="text-4xl font-bold text-destructive">{cancellationRate}%</div>
+                <div className="text-4xl font-bold text-destructive">
+                  {cancellationRate}%
+                </div>
                 <div className="flex-1">
                   <div className="h-4 bg-muted rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-destructive transition-all duration-500"
                       style={{ width: `${cancellationRate}%` }}
                     />
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    {stats.cancelledAppointments} of {stats.totalAppointments} appointments
+                    {stats.cancelledAppointments} of {stats.totalAppointments}{" "}
+                    appointments
                   </p>
                 </div>
               </div>
@@ -385,16 +468,25 @@ export default function AdminReportsPage() {
             </CardHeader>
             <CardContent>
               {departmentStats.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No department data available</p>
+                <p className="text-muted-foreground text-center py-4">
+                  No department data available
+                </p>
               ) : (
                 <div className="space-y-4">
                   {departmentStats.map((dept, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                    >
                       <div>
                         <p className="font-medium">{dept.name}</p>
-                        <p className="text-sm text-muted-foreground">{dept.doctorCount} doctors</p>
+                        <p className="text-sm text-muted-foreground">
+                          {dept.doctorCount} doctors
+                        </p>
                       </div>
-                      <Badge variant="secondary">{dept.appointmentCount} appointments</Badge>
+                      <Badge variant="secondary">
+                        {dept.appointmentCount} appointments
+                      </Badge>
                     </div>
                   ))}
                 </div>
@@ -413,23 +505,32 @@ export default function AdminReportsPage() {
             </CardHeader>
             <CardContent>
               {doctorStats.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No doctor data available</p>
+                <p className="text-muted-foreground text-center py-4">
+                  No doctor data available
+                </p>
               ) : (
                 <div className="space-y-4">
                   {doctorStats.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-chart-4/10 rounded-full flex items-center justify-center text-chart-4 font-bold">
                           {index + 1}
                         </div>
                         <div>
                           <p className="font-medium">Dr. {doc.name}</p>
-                          <p className="text-sm text-muted-foreground">{doc.specialization}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {doc.specialization}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">{doc.appointmentCount}</p>
-                        <p className="text-xs text-muted-foreground">{doc.completedCount} completed</p>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.completedCount} completed
+                        </p>
                       </div>
                     </div>
                   ))}

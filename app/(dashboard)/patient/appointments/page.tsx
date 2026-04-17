@@ -1,22 +1,27 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar as CalendarPicker } from '@/components/ui/calendar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -25,14 +30,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import Link from 'next/link';
-import { ArrowLeft, Clock, Plus, Stethoscope, X, Building2, CalendarDays, Heart, User, MapPin, Phone } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
+} from "@/components/ui/dialog";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Clock,
+  Plus,
+  Stethoscope,
+  X,
+  Building2,
+  CalendarDays,
+  Heart,
+  User,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface Department {
   id: string;
@@ -80,11 +95,11 @@ export default function PatientAppointmentsPage() {
   const [booking, setBooking] = useState(false);
 
   // Booking form state
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-  const [selectedDoctor, setSelectedDoctor] = useState<string>('');
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [selectedDoctor, setSelectedDoctor] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [selectedTime, setSelectedTime] = useState<string>('');
-  const [appointmentNotes, setAppointmentNotes] = useState('');
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [appointmentNotes, setAppointmentNotes] = useState("");
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
@@ -93,8 +108,9 @@ export default function PatientAppointmentsPage() {
 
     try {
       const { data } = await supabase
-        .from('appointments')
-        .select(`
+        .from("appointments")
+        .select(
+          `
           id,
           appointment_date,
           appointment_time,
@@ -105,26 +121,33 @@ export default function PatientAppointmentsPage() {
             specialization,
             profile:profiles!doctors_profile_id_fkey(full_name)
           )
-        `)
-        .eq('patient_id', profile.id)
-        .order('appointment_date', { ascending: false })
-        .order('appointment_time', { ascending: false });
+        `,
+        )
+        .eq("patient_id", profile.id)
+        .order("appointment_date", { ascending: false })
+        .order("appointment_time", { ascending: false });
 
       // Transform the data to handle Supabase's array format for nested relations
       const transformedData = (data || []).map((apt: any) => ({
         ...apt,
-        doctor: Array.isArray(apt.doctor) ? {
-          ...apt.doctor[0],
-          profile: Array.isArray(apt.doctor[0]?.profile) ? apt.doctor[0].profile[0] : apt.doctor[0]?.profile
-        } : {
-          ...apt.doctor,
-          profile: Array.isArray(apt.doctor?.profile) ? apt.doctor.profile[0] : apt.doctor?.profile
-        }
+        doctor: Array.isArray(apt.doctor)
+          ? {
+              ...apt.doctor[0],
+              profile: Array.isArray(apt.doctor[0]?.profile)
+                ? apt.doctor[0].profile[0]
+                : apt.doctor[0]?.profile,
+            }
+          : {
+              ...apt.doctor,
+              profile: Array.isArray(apt.doctor?.profile)
+                ? apt.doctor.profile[0]
+                : apt.doctor?.profile,
+            },
       }));
 
       setAppointments(transformedData as Appointment[]);
     } catch (error) {
-      console.error('Error fetching appointments:', error);
+      console.error("Error fetching appointments:", error);
     }
   };
 
@@ -135,14 +158,14 @@ export default function PatientAppointmentsPage() {
       try {
         // Fetch departments
         const { data: deptData } = await supabase
-          .from('departments')
-          .select('id, name')
-          .order('name');
+          .from("departments")
+          .select("id, name")
+          .order("name");
 
         setDepartments(deptData || []);
         await fetchAppointments();
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoadingData(false);
       }
@@ -162,21 +185,23 @@ export default function PatientAppointmentsPage() {
       }
 
       const { data } = await supabase
-        .from('doctors')
-        .select(`
+        .from("doctors")
+        .select(
+          `
           id,
           specialization,
           consultation_duration,
           is_available,
           profile:profiles!doctors_profile_id_fkey(full_name)
-        `)
-        .eq('department_id', selectedDepartment)
-        .eq('is_available', true);
+        `,
+        )
+        .eq("department_id", selectedDepartment)
+        .eq("is_available", true);
 
       // Transform the data to handle Supabase's array format for nested relations
       const transformedDoctors = (data || []).map((doc: any) => ({
         ...doc,
-        profile: Array.isArray(doc.profile) ? doc.profile[0] : doc.profile
+        profile: Array.isArray(doc.profile) ? doc.profile[0] : doc.profile,
       }));
 
       setDoctors(transformedDoctors as DoctorOption[]);
@@ -196,20 +221,20 @@ export default function PatientAppointmentsPage() {
       setLoadingSlots(true);
 
       try {
-        const dateStr = format(selectedDate, 'yyyy-MM-dd');
+        const dateStr = format(selectedDate, "yyyy-MM-dd");
         const dayOfWeek = selectedDate.getDay();
 
         // Get doctor's availability for this day
         const { data: availability, error: availabilityError } = await supabase
-          .from('doctor_availability')
-          .select('start_time, end_time, is_blocked')
-          .eq('doctor_id', selectedDoctor)
-          .eq('day_of_week', dayOfWeek)
+          .from("doctor_availability")
+          .select("start_time, end_time, is_blocked")
+          .eq("doctor_id", selectedDoctor)
+          .eq("day_of_week", dayOfWeek)
           .maybeSingle();
 
         // If no availability set for this day, show a helpful message
         if (availabilityError || !availability) {
-          console.log('No availability found for this day');
+          console.log("No availability found for this day");
           setAvailableSlots([]);
           setLoadingSlots(false);
           return;
@@ -222,42 +247,47 @@ export default function PatientAppointmentsPage() {
         }
 
         // Get doctor's consultation duration
-        const doctor = doctors.find(d => d.id === selectedDoctor);
+        const doctor = doctors.find((d) => d.id === selectedDoctor);
         const duration = doctor?.consultation_duration || 15;
 
         // Get existing appointments for this date
         const { data: existingAppointments } = await supabase
-          .from('appointments')
-          .select('appointment_time')
-          .eq('doctor_id', selectedDoctor)
-          .eq('appointment_date', dateStr)
-          .in('status', ['pending', 'confirmed']);
+          .from("appointments")
+          .select("appointment_time")
+          .eq("doctor_id", selectedDoctor)
+          .eq("appointment_date", dateStr)
+          .in("status", ["pending", "confirmed"]);
 
         // Normalize time format to HH:mm (remove seconds if present)
         const bookedTimes = new Set(
-          existingAppointments?.map(a => a.appointment_time.substring(0, 5)) || []
+          existingAppointments?.map((a) =>
+            a.appointment_time.substring(0, 5),
+          ) || [],
         );
 
         // Generate time slots
         const slots: TimeSlot[] = [];
-        const startParts = availability.start_time.split(':');
-        const endParts = availability.end_time.split(':');
-        let currentMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+        const startParts = availability.start_time.split(":");
+        const endParts = availability.end_time.split(":");
+        let currentMinutes =
+          parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
         const endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
 
         // Check if selected date is today to filter out past slots
         const now = new Date();
         const isToday = selectedDate.toDateString() === now.toDateString();
-        const currentTimeMinutes = isToday ? now.getHours() * 60 + now.getMinutes() : 0;
+        const currentTimeMinutes = isToday
+          ? now.getHours() * 60 + now.getMinutes()
+          : 0;
 
         while (currentMinutes + duration <= endMinutes) {
           const hours = Math.floor(currentMinutes / 60);
           const mins = currentMinutes % 60;
-          const timeStr = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-          
+          const timeStr = `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+
           // Mark slot as unavailable if it's in the past (for today) or already booked
           const isPastSlot = isToday && currentMinutes <= currentTimeMinutes;
-          
+
           slots.push({
             time: timeStr,
             available: !bookedTimes.has(timeStr) && !isPastSlot,
@@ -268,7 +298,7 @@ export default function PatientAppointmentsPage() {
 
         setAvailableSlots(slots);
       } catch (error) {
-        console.error('Error fetching slots:', error);
+        console.error("Error fetching slots:", error);
         setAvailableSlots([]);
       } finally {
         setLoadingSlots(false);
@@ -280,32 +310,32 @@ export default function PatientAppointmentsPage() {
 
   const bookAppointment = async () => {
     if (!profile?.id || !selectedDoctor || !selectedDate || !selectedTime) {
-      toast.error('Please fill in all required fields');
+      toast.error("Please fill in all required fields");
       return;
     }
 
     setBooking(true);
 
     try {
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
 
       // Get the next token number for this doctor and date
       const { data: existingTokens } = await supabase
-        .from('appointments')
-        .select('token_number')
-        .eq('doctor_id', selectedDoctor)
-        .eq('appointment_date', dateStr)
-        .order('token_number', { ascending: false })
+        .from("appointments")
+        .select("token_number")
+        .eq("doctor_id", selectedDoctor)
+        .eq("appointment_date", dateStr)
+        .order("token_number", { ascending: false })
         .limit(1);
 
       const nextToken = (existingTokens?.[0]?.token_number || 0) + 1;
 
-      const { error } = await supabase.from('appointments').insert({
+      const { error } = await supabase.from("appointments").insert({
         patient_id: profile.id,
         doctor_id: selectedDoctor,
         appointment_date: dateStr,
         appointment_time: selectedTime,
-        status: 'pending',
+        status: "pending",
         token_number: nextToken,
         notes: appointmentNotes || null,
       });
@@ -317,8 +347,8 @@ export default function PatientAppointmentsPage() {
       resetBookingForm();
       await fetchAppointments();
     } catch (error: any) {
-      console.error('Error booking appointment:', error);
-      toast.error(error.message || 'Failed to book appointment');
+      console.error("Error booking appointment:", error);
+      toast.error(error.message || "Failed to book appointment");
     } finally {
       setBooking(false);
     }
@@ -327,34 +357,34 @@ export default function PatientAppointmentsPage() {
   const cancelAppointment = async (appointmentId: string) => {
     try {
       const { error } = await supabase
-        .from('appointments')
-        .update({ status: 'cancelled' })
-        .eq('id', appointmentId);
+        .from("appointments")
+        .update({ status: "cancelled" })
+        .eq("id", appointmentId);
 
       if (error) throw error;
 
-      toast.success('Appointment cancelled');
+      toast.success("Appointment cancelled");
       await fetchAppointments();
     } catch (error) {
-      console.error('Error cancelling appointment:', error);
-      toast.error('Failed to cancel appointment');
+      console.error("Error cancelling appointment:", error);
+      toast.error("Failed to cancel appointment");
     }
   };
 
   const resetBookingForm = () => {
-    setSelectedDepartment('');
-    setSelectedDoctor('');
+    setSelectedDepartment("");
+    setSelectedDoctor("");
     setSelectedDate(undefined);
-    setSelectedTime('');
-    setAppointmentNotes('');
+    setSelectedTime("");
+    setAppointmentNotes("");
     setAvailableSlots([]);
   };
 
   const upcomingAppointments = appointments.filter(
-    a => a.status === 'pending' || a.status === 'confirmed'
+    (a) => a.status === "pending" || a.status === "confirmed",
   );
   const pastAppointments = appointments.filter(
-    a => a.status === 'completed' || a.status === 'cancelled'
+    (a) => a.status === "completed" || a.status === "cancelled",
   );
 
   if (isLoading || loadingData) {
@@ -382,11 +412,16 @@ export default function PatientAppointmentsPage() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/patient" className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
+              <Link
+                href="/patient"
+                className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+              >
                 <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
                   <Heart className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="font-bold text-xl hidden sm:inline">HealthCare</span>
+                <span className="font-bold text-xl hidden sm:inline">
+                  HealthCare
+                </span>
               </Link>
             </div>
             <div className="flex items-center gap-3">
@@ -395,12 +430,15 @@ export default function PatientAppointmentsPage() {
                 <User className="w-4 h-4" />
                 <span>{profile?.full_name}</span>
               </div>
-              <Dialog open={showBookDialog} onOpenChange={(open) => {
-                setShowBookDialog(open);
-                if (open) {
-                  resetBookingForm();
-                }
-              }}>
+              <Dialog
+                open={showBookDialog}
+                onOpenChange={(open) => {
+                  setShowBookDialog(open);
+                  if (open) {
+                    resetBookingForm();
+                  }
+                }}
+              >
                 <DialogTrigger asChild>
                   <Button className="bg-primary hover:bg-primary/90 shadow-lg transition-all hover:shadow-xl">
                     <Plus className="w-4 h-4 mr-2" />
@@ -414,7 +452,9 @@ export default function PatientAppointmentsPage() {
                         <CalendarDays className="w-6 h-6 text-primary-foreground" />
                       </div>
                       <div>
-                        <DialogTitle className="text-xl">Book an Appointment</DialogTitle>
+                        <DialogTitle className="text-xl">
+                          Book an Appointment
+                        </DialogTitle>
                         <DialogDescription>
                           Select your preferred department, doctor, and time
                         </DialogDescription>
@@ -428,13 +468,20 @@ export default function PatientAppointmentsPage() {
                         <Building2 className="w-4 h-4 text-primary" />
                         Department
                       </Label>
-                      <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                      <Select
+                        value={selectedDepartment}
+                        onValueChange={setSelectedDepartment}
+                      >
                         <SelectTrigger className="h-12 border-2 border-border focus:border-primary transition-colors">
                           <SelectValue placeholder="Choose a department" />
                         </SelectTrigger>
                         <SelectContent>
                           {departments.map((dept) => (
-                            <SelectItem key={dept.id} value={dept.id} className="py-3">
+                            <SelectItem
+                              key={dept.id}
+                              value={dept.id}
+                              className="py-3"
+                            >
                               <span className="font-medium">{dept.name}</span>
                             </SelectItem>
                           ))}
@@ -449,7 +496,10 @@ export default function PatientAppointmentsPage() {
                           <Stethoscope className="w-4 h-4 text-chart-1" />
                           Doctor
                         </Label>
-                        <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
+                        <Select
+                          value={selectedDoctor}
+                          onValueChange={setSelectedDoctor}
+                        >
                           <SelectTrigger className="h-12 border-2 border-border focus:border-primary transition-colors">
                             <SelectValue placeholder="Select a doctor" />
                           </SelectTrigger>
@@ -460,14 +510,22 @@ export default function PatientAppointmentsPage() {
                               </SelectItem>
                             ) : (
                               doctors.map((doc) => (
-                                <SelectItem key={doc.id} value={doc.id} className="py-3">
+                                <SelectItem
+                                  key={doc.id}
+                                  value={doc.id}
+                                  className="py-3"
+                                >
                                   <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 bg-chart-1/20 rounded-full flex items-center justify-center">
                                       <User className="w-4 h-4 text-chart-1" />
                                     </div>
                                     <div>
-                                      <p className="font-medium">Dr. {doc.profile?.full_name}</p>
-                                      <p className="text-xs text-muted-foreground">{doc.specialization}</p>
+                                      <p className="font-medium">
+                                        Dr. {doc.profile?.full_name}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {doc.specialization}
+                                      </p>
                                     </div>
                                   </div>
                                 </SelectItem>
@@ -515,24 +573,32 @@ export default function PatientAppointmentsPage() {
                         ) : availableSlots.length === 0 ? (
                           <div className="text-center py-8 bg-muted rounded-xl">
                             <Clock className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                            <p className="text-muted-foreground">No slots available for this date</p>
-                            <p className="text-sm text-muted-foreground">Try selecting another date</p>
+                            <p className="text-muted-foreground">
+                              No slots available for this date
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Try selecting another date
+                            </p>
                           </div>
                         ) : (
                           <div className="grid grid-cols-4 gap-2">
                             {availableSlots.map((slot) => (
                               <Button
                                 key={slot.time}
-                                variant={selectedTime === slot.time ? 'default' : 'outline'}
+                                variant={
+                                  selectedTime === slot.time
+                                    ? "default"
+                                    : "outline"
+                                }
                                 size="sm"
                                 disabled={!slot.available}
                                 onClick={() => setSelectedTime(slot.time)}
                                 className={`h-10 text-sm font-medium transition-all ${
-                                  selectedTime === slot.time 
-                                    ? 'bg-primary border-0 shadow-md' 
-                                    : slot.available 
-                                      ? 'hover:border-primary/50 hover:bg-primary/10' 
-                                      : 'opacity-40 cursor-not-allowed'
+                                  selectedTime === slot.time
+                                    ? "bg-primary border-0 shadow-md"
+                                    : slot.available
+                                      ? "hover:border-primary/50 hover:bg-primary/10"
+                                      : "opacity-40 cursor-not-allowed"
                                 }`}
                               >
                                 {slot.time}
@@ -546,7 +612,9 @@ export default function PatientAppointmentsPage() {
                     {/* Notes */}
                     {selectedTime && (
                       <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <Label className="text-sm font-semibold">Additional Notes (Optional)</Label>
+                        <Label className="text-sm font-semibold">
+                          Additional Notes (Optional)
+                        </Label>
                         <Textarea
                           placeholder="Any specific concerns or notes for the doctor..."
                           value={appointmentNotes}
@@ -557,12 +625,21 @@ export default function PatientAppointmentsPage() {
                     )}
                   </div>
                   <DialogFooter className="border-t pt-4 gap-2">
-                    <Button variant="outline" onClick={() => setShowBookDialog(false)} className="flex-1 sm:flex-none">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowBookDialog(false)}
+                      className="flex-1 sm:flex-none"
+                    >
                       Cancel
                     </Button>
                     <Button
                       onClick={bookAppointment}
-                      disabled={!selectedDoctor || !selectedDate || !selectedTime || booking}
+                      disabled={
+                        !selectedDoctor ||
+                        !selectedDate ||
+                        !selectedTime ||
+                        booking
+                      }
                       className="flex-1 sm:flex-none bg-primary hover:bg-primary/90"
                     >
                       {booking ? (
@@ -571,7 +648,7 @@ export default function PatientAppointmentsPage() {
                           Booking...
                         </>
                       ) : (
-                        'Confirm Booking'
+                        "Confirm Booking"
                       )}
                     </Button>
                   </DialogFooter>
@@ -585,27 +662,32 @@ export default function PatientAppointmentsPage() {
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
         {/* Page Title */}
         <div className="mb-6">
-          <Link href="/patient" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-3 transition-colors">
+          <Link
+            href="/patient"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-3 transition-colors"
+          >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back to Dashboard
           </Link>
           <h1 className="text-3xl font-bold text-foreground">
             My Appointments
           </h1>
-          <p className="text-muted-foreground mt-1">Manage your healthcare appointments</p>
+          <p className="text-muted-foreground mt-1">
+            Manage your healthcare appointments
+          </p>
         </div>
 
         {/* Appointments Tabs */}
         <Tabs defaultValue="upcoming" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 bg-card/70 backdrop-blur-sm p-1.5 rounded-xl shadow-sm border border-border h-14">
-            <TabsTrigger 
+            <TabsTrigger
               value="upcoming"
               className="flex items-center justify-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg h-full transition-all font-medium"
             >
               <CalendarDays className="w-4 h-4" />
               <span>Upcoming ({upcomingAppointments.length})</span>
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="past"
               className="flex items-center justify-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg h-full transition-all font-medium"
             >
@@ -622,8 +704,12 @@ export default function PatientAppointmentsPage() {
                     <CalendarDays className="w-5 h-5 text-primary-foreground" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Upcoming Appointments</CardTitle>
-                    <CardDescription>Your scheduled consultations</CardDescription>
+                    <CardTitle className="text-lg">
+                      Upcoming Appointments
+                    </CardTitle>
+                    <CardDescription>
+                      Your scheduled consultations
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -633,11 +719,14 @@ export default function PatientAppointmentsPage() {
                     <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                       <CalendarDays className="w-10 h-10 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">No appointments yet</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      No appointments yet
+                    </h3>
                     <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                      Book your first appointment with one of our healthcare specialists
+                      Book your first appointment with one of our healthcare
+                      specialists
                     </p>
-                    <Button 
+                    <Button
                       onClick={() => setShowBookDialog(true)}
                       className="bg-primary hover:bg-primary/90 shadow-lg"
                     >
@@ -657,7 +746,9 @@ export default function PatientAppointmentsPage() {
                           <div className="relative">
                             <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
                               {apt.token_number ? (
-                                <span className="text-primary-foreground font-bold text-lg">#{apt.token_number}</span>
+                                <span className="text-primary-foreground font-bold text-lg">
+                                  #{apt.token_number}
+                                </span>
                               ) : (
                                 <Stethoscope className="w-7 h-7 text-primary-foreground" />
                               )}
@@ -668,9 +759,11 @@ export default function PatientAppointmentsPage() {
                           </div>
                           <div>
                             <p className="font-semibold text-foreground text-lg">
-                              Dr. {apt.doctor?.profile?.full_name || 'Unknown'}
+                              Dr. {apt.doctor?.profile?.full_name || "Unknown"}
                             </p>
-                            <p className="text-primary font-medium text-sm">{apt.doctor?.specialization}</p>
+                            <p className="text-primary font-medium text-sm">
+                              {apt.doctor?.specialization}
+                            </p>
                             <div className="flex items-center gap-3 mt-1">
                               <span className="text-sm text-muted-foreground flex items-center gap-1.5 bg-muted px-2.5 py-1 rounded-full">
                                 <CalendarDays className="w-3.5 h-3.5" />
@@ -684,14 +777,16 @@ export default function PatientAppointmentsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <Badge 
+                          <Badge
                             className={`px-3 py-1.5 rounded-full font-medium ${
-                              apt.status === 'confirmed' 
-                                ? 'bg-chart-1/20 text-chart-1 hover:bg-chart-1/20' 
-                                : 'bg-chart-3/20 text-chart-3 hover:bg-chart-3/20'
+                              apt.status === "confirmed"
+                                ? "bg-chart-1/20 text-chart-1 hover:bg-chart-1/20"
+                                : "bg-chart-3/20 text-chart-3 hover:bg-chart-3/20"
                             }`}
                           >
-                            {apt.status === 'confirmed' ? '✓ Confirmed' : apt.status}
+                            {apt.status === "confirmed"
+                              ? "✓ Confirmed"
+                              : apt.status}
                           </Badge>
                           <Button
                             size="sm"
@@ -730,8 +825,12 @@ export default function PatientAppointmentsPage() {
                     <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                       <Clock className="w-10 h-10 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">No history yet</h3>
-                    <p className="text-muted-foreground">Your completed appointments will appear here</p>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      No history yet
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Your completed appointments will appear here
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -747,9 +846,11 @@ export default function PatientAppointmentsPage() {
                           </div>
                           <div>
                             <p className="font-semibold text-muted-foreground text-lg">
-                              Dr. {apt.doctor?.profile?.full_name || 'Unknown'}
+                              Dr. {apt.doctor?.profile?.full_name || "Unknown"}
                             </p>
-                            <p className="text-muted-foreground font-medium text-sm">{apt.doctor?.specialization}</p>
+                            <p className="text-muted-foreground font-medium text-sm">
+                              {apt.doctor?.specialization}
+                            </p>
                             <div className="flex items-center gap-3 mt-1">
                               <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                                 <CalendarDays className="w-3.5 h-3.5" />
@@ -764,12 +865,14 @@ export default function PatientAppointmentsPage() {
                         </div>
                         <Badge
                           className={`px-3 py-1.5 rounded-full font-medium ${
-                            apt.status === 'completed' 
-                              ? 'bg-primary/20 text-primary hover:bg-primary/20' 
-                              : 'bg-destructive/20 text-destructive hover:bg-destructive/20'
+                            apt.status === "completed"
+                              ? "bg-primary/20 text-primary hover:bg-primary/20"
+                              : "bg-destructive/20 text-destructive hover:bg-destructive/20"
                           }`}
                         >
-                          {apt.status === 'completed' ? '✓ Completed' : apt.status}
+                          {apt.status === "completed"
+                            ? "✓ Completed"
+                            : apt.status}
                         </Badge>
                       </div>
                     ))}
@@ -785,7 +888,10 @@ export default function PatientAppointmentsPage() {
       <footer className="mt-12 py-6 border-t border-border bg-card/50">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-2">
           <div className="flex flex-wrap justify-center items-center gap-2 text-sm text-muted-foreground">
-            <a href="mailto:support@healthcare.com" className="hover:text-primary transition-colors">
+            <a
+              href="mailto:support@healthcare.com"
+              className="hover:text-primary transition-colors"
+            >
               support@healthcare.com
             </a>
             <span className="text-muted-foreground/50">|</span>

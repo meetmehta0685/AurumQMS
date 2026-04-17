@@ -1,20 +1,26 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +28,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -31,12 +36,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import Link from 'next/link';
-import { ArrowLeft, Plus, Stethoscope, Edit, Trash2, Building2, UserCheck, UserX, Clock } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+} from "@/components/ui/table";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Stethoscope,
+  Edit,
+  Trash2,
+  Building2,
+  UserCheck,
+  UserX,
+  Clock,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Department {
   id: string;
@@ -73,7 +87,7 @@ interface PendingDoctor {
 }
 
 export default function AdminDoctorsPage() {
-  const { profile, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const supabase = createClient();
   const [loadingData, setLoadingData] = useState(true);
   const [doctors, setDoctors] = useState<DoctorWithDetails[]>([]);
@@ -81,33 +95,38 @@ export default function AdminDoctorsPage() {
   const [pendingDoctors, setPendingDoctors] = useState<PendingDoctor[]>([]);
   const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [selectedPending, setSelectedPending] = useState<PendingDoctor | null>(null);
-  const [editingDoctor, setEditingDoctor] = useState<DoctorWithDetails | null>(null);
+  const [selectedPending, setSelectedPending] = useState<PendingDoctor | null>(
+    null,
+  );
+  const [editingDoctor, setEditingDoctor] = useState<DoctorWithDetails | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
 
   // Form state
-  const [departmentId, setDepartmentId] = useState('');
-  const [specialization, setSpecialization] = useState('');
-  const [qualification, setQualification] = useState('');
-  const [experienceYears, setExperienceYears] = useState('0');
-  const [consultationDuration, setConsultationDuration] = useState('15');
-  const [maxPatientsPerSlot, setMaxPatientsPerSlot] = useState('1');
-  const [bio, setBio] = useState('');
+  const [departmentId, setDepartmentId] = useState("");
+  const [specialization, setSpecialization] = useState("");
+  const [qualification, setQualification] = useState("");
+  const [experienceYears, setExperienceYears] = useState("0");
+  const [consultationDuration, setConsultationDuration] = useState("15");
+  const [maxPatientsPerSlot, setMaxPatientsPerSlot] = useState("1");
+  const [bio, setBio] = useState("");
 
   const fetchData = async () => {
     try {
       // Fetch departments
       const { data: deptData } = await supabase
-        .from('departments')
-        .select('id, name')
-        .order('name');
+        .from("departments")
+        .select("id, name")
+        .order("name");
 
       setDepartments(deptData || []);
 
       // Fetch doctors with details
       const { data: doctorData, error: doctorError } = await supabase
-        .from('doctors')
-        .select(`
+        .from("doctors")
+        .select(
+          `
           id,
           user_id,
           profile_id,
@@ -120,45 +139,54 @@ export default function AdminDoctorsPage() {
           bio,
           department:departments(id, name),
           profile:profiles!doctors_profile_id_fkey(full_name, email, phone)
-        `)
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .order("created_at", { ascending: false });
 
       if (doctorError) {
-        console.error('Error fetching doctors:', doctorError);
+        console.error("Error fetching doctors:", doctorError);
       }
 
       // Transform the data to match our interface (handle array vs object from Supabase)
       const transformedDoctors = (doctorData || []).map((doc: any) => ({
         ...doc,
-        department: Array.isArray(doc.department) ? doc.department[0] : doc.department,
+        department: Array.isArray(doc.department)
+          ? doc.department[0]
+          : doc.department,
         profile: Array.isArray(doc.profile) ? doc.profile[0] : doc.profile,
       }));
 
       setDoctors(transformedDoctors as DoctorWithDetails[]);
 
       // Get list of user_ids that are already doctors
-      const existingDoctorUserIds = transformedDoctors.map((d: any) => d.user_id);
+      const existingDoctorUserIds = transformedDoctors.map(
+        (d: any) => d.user_id,
+      );
 
       // Fetch profiles with role='doctor' that don't have a doctor record yet
       let pendingQuery = supabase
-        .from('profiles')
-        .select('id, user_id, full_name, email')
-        .eq('role', 'doctor');
+        .from("profiles")
+        .select("id, user_id, full_name, email")
+        .eq("role", "doctor");
 
       // Only filter if there are existing doctors
       if (existingDoctorUserIds.length > 0) {
-        pendingQuery = pendingQuery.not('user_id', 'in', `(${existingDoctorUserIds.join(',')})`);
+        pendingQuery = pendingQuery.not(
+          "user_id",
+          "in",
+          `(${existingDoctorUserIds.join(",")})`,
+        );
       }
 
       const { data: pendingData, error: pendingError } = await pendingQuery;
 
       if (pendingError) {
-        console.error('Error fetching pending doctors:', pendingError);
+        console.error("Error fetching pending doctors:", pendingError);
       }
 
       setPendingDoctors(pendingData || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoadingData(false);
     }
@@ -169,61 +197,72 @@ export default function AdminDoctorsPage() {
   }, [supabase]);
 
   const resetForm = () => {
-    setDepartmentId('');
-    setSpecialization('');
-    setQualification('');
-    setExperienceYears('0');
-    setConsultationDuration('15');
-    setMaxPatientsPerSlot('1');
-    setBio('');
+    setDepartmentId("");
+    setSpecialization("");
+    setQualification("");
+    setExperienceYears("0");
+    setConsultationDuration("15");
+    setMaxPatientsPerSlot("1");
+    setBio("");
     setSelectedPending(null);
     setEditingDoctor(null);
   };
 
   const approveDoctor = async () => {
-    if (!selectedPending || !departmentId || !specialization || !qualification) {
-      toast.error('Please fill in all required fields');
+    if (
+      !selectedPending ||
+      !departmentId ||
+      !specialization ||
+      !qualification
+    ) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
     setSaving(true);
 
     try {
-      const { data: newDoctor, error } = await supabase.from('doctors').insert({
-        user_id: selectedPending.user_id,
-        profile_id: selectedPending.id,
-        department_id: departmentId,
-        specialization,
-        qualification,
-        experience_years: parseInt(experienceYears),
-        consultation_duration: parseInt(consultationDuration),
-        max_patients_per_slot: parseInt(maxPatientsPerSlot),
-        bio: bio || null,
-        is_available: true,
-      }).select('id').single();
+      const { data: newDoctor, error } = await supabase
+        .from("doctors")
+        .insert({
+          user_id: selectedPending.user_id,
+          profile_id: selectedPending.id,
+          department_id: departmentId,
+          specialization,
+          qualification,
+          experience_years: parseInt(experienceYears),
+          consultation_duration: parseInt(consultationDuration),
+          max_patients_per_slot: parseInt(maxPatientsPerSlot),
+          bio: bio || null,
+          is_available: true,
+        })
+        .select("id")
+        .single();
 
       if (error) throw error;
 
       // Create default availability for weekdays (Monday-Friday, 9 AM - 5 PM)
       if (newDoctor) {
-        const defaultAvailability = [1, 2, 3, 4, 5].map(dayOfWeek => ({
+        const defaultAvailability = [1, 2, 3, 4, 5].map((dayOfWeek) => ({
           doctor_id: newDoctor.id,
           day_of_week: dayOfWeek,
-          start_time: '09:00',
-          end_time: '17:00',
+          start_time: "09:00",
+          end_time: "17:00",
           is_blocked: false,
         }));
 
-        await supabase.from('doctor_availability').insert(defaultAvailability);
+        await supabase.from("doctor_availability").insert(defaultAvailability);
       }
 
-      toast.success(`${selectedPending.full_name} has been approved as a doctor`);
+      toast.success(
+        `${selectedPending.full_name} has been approved as a doctor`,
+      );
       setShowApproveDialog(false);
       resetForm();
       await fetchData();
     } catch (error: any) {
-      console.error('Error approving doctor:', error);
-      toast.error(error.message || 'Failed to approve doctor');
+      console.error("Error approving doctor:", error);
+      toast.error(error.message || "Failed to approve doctor");
     } finally {
       setSaving(false);
     }
@@ -231,7 +270,7 @@ export default function AdminDoctorsPage() {
 
   const updateDoctor = async () => {
     if (!editingDoctor || !departmentId || !specialization || !qualification) {
-      toast.error('Please fill in all required fields');
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -239,7 +278,7 @@ export default function AdminDoctorsPage() {
 
     try {
       const { error } = await supabase
-        .from('doctors')
+        .from("doctors")
         .update({
           department_id: departmentId,
           specialization,
@@ -249,17 +288,17 @@ export default function AdminDoctorsPage() {
           max_patients_per_slot: parseInt(maxPatientsPerSlot),
           bio: bio || null,
         })
-        .eq('id', editingDoctor.id);
+        .eq("id", editingDoctor.id);
 
       if (error) throw error;
 
-      toast.success('Doctor updated successfully');
+      toast.success("Doctor updated successfully");
       setShowEditDialog(false);
       resetForm();
       await fetchData();
     } catch (error: any) {
-      console.error('Error updating doctor:', error);
-      toast.error(error.message || 'Failed to update doctor');
+      console.error("Error updating doctor:", error);
+      toast.error(error.message || "Failed to update doctor");
     } finally {
       setSaving(false);
     }
@@ -268,37 +307,46 @@ export default function AdminDoctorsPage() {
   const toggleDoctorAvailability = async (doctor: DoctorWithDetails) => {
     try {
       const { error } = await supabase
-        .from('doctors')
+        .from("doctors")
         .update({ is_available: !doctor.is_available })
-        .eq('id', doctor.id);
+        .eq("id", doctor.id);
 
       if (error) throw error;
 
       toast.success(
-        doctor.is_available ? 'Doctor marked as unavailable' : 'Doctor marked as available'
+        doctor.is_available
+          ? "Doctor marked as unavailable"
+          : "Doctor marked as available",
       );
       await fetchData();
     } catch (error: any) {
-      console.error('Error toggling availability:', error);
-      toast.error('Failed to update availability');
+      console.error("Error toggling availability:", error);
+      toast.error("Failed to update availability");
     }
   };
 
   const deleteDoctor = async (doctor: DoctorWithDetails) => {
-    if (!confirm(`Are you sure you want to remove ${doctor.profile?.full_name} as a doctor?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to remove ${doctor.profile?.full_name} as a doctor?`,
+      )
+    ) {
       return;
     }
 
     try {
-      const { error } = await supabase.from('doctors').delete().eq('id', doctor.id);
+      const { error } = await supabase
+        .from("doctors")
+        .delete()
+        .eq("id", doctor.id);
 
       if (error) throw error;
 
-      toast.success('Doctor removed successfully');
+      toast.success("Doctor removed successfully");
       await fetchData();
     } catch (error: any) {
-      console.error('Error deleting doctor:', error);
-      toast.error(error.message || 'Failed to remove doctor');
+      console.error("Error deleting doctor:", error);
+      toast.error(error.message || "Failed to remove doctor");
     }
   };
 
@@ -306,33 +354,37 @@ export default function AdminDoctorsPage() {
     try {
       // Check if doctor already has availability
       const { data: existing } = await supabase
-        .from('doctor_availability')
-        .select('id')
-        .eq('doctor_id', doctor.id)
+        .from("doctor_availability")
+        .select("id")
+        .eq("doctor_id", doctor.id)
         .limit(1);
 
       if (existing && existing.length > 0) {
-        toast.info('Doctor already has availability configured');
+        toast.info("Doctor already has availability configured");
         return;
       }
 
       // Create default availability for weekdays (Monday-Friday, 9 AM - 5 PM)
-      const defaultAvailability = [1, 2, 3, 4, 5].map(dayOfWeek => ({
+      const defaultAvailability = [1, 2, 3, 4, 5].map((dayOfWeek) => ({
         doctor_id: doctor.id,
         day_of_week: dayOfWeek,
-        start_time: '09:00',
-        end_time: '17:00',
+        start_time: "09:00",
+        end_time: "17:00",
         is_blocked: false,
       }));
 
-      const { error } = await supabase.from('doctor_availability').insert(defaultAvailability);
+      const { error } = await supabase
+        .from("doctor_availability")
+        .insert(defaultAvailability);
 
       if (error) throw error;
 
-      toast.success(`Default availability created for Dr. ${doctor.profile?.full_name}`);
+      toast.success(
+        `Default availability created for Dr. ${doctor.profile?.full_name}`,
+      );
     } catch (error: any) {
-      console.error('Error initializing availability:', error);
-      toast.error(error.message || 'Failed to initialize availability');
+      console.error("Error initializing availability:", error);
+      toast.error(error.message || "Failed to initialize availability");
     }
   };
 
@@ -344,13 +396,13 @@ export default function AdminDoctorsPage() {
 
   const openEditDialog = (doctor: DoctorWithDetails) => {
     setEditingDoctor(doctor);
-    setDepartmentId(doctor.department?.id || '');
+    setDepartmentId(doctor.department?.id || "");
     setSpecialization(doctor.specialization);
     setQualification(doctor.qualification);
     setExperienceYears(doctor.experience_years.toString());
     setConsultationDuration(doctor.consultation_duration.toString());
     setMaxPatientsPerSlot(doctor.max_patients_per_slot.toString());
-    setBio(doctor.bio || '');
+    setBio(doctor.bio || "");
     setShowEditDialog(true);
   };
 
@@ -377,8 +429,12 @@ export default function AdminDoctorsPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Manage Doctors</h1>
-            <p className="text-muted-foreground">Approve and manage doctor profiles</p>
+            <h1 className="text-2xl font-bold text-foreground">
+              Manage Doctors
+            </h1>
+            <p className="text-muted-foreground">
+              Approve and manage doctor profiles
+            </p>
           </div>
         </div>
 
@@ -403,7 +459,9 @@ export default function AdminDoctorsPage() {
                   >
                     <div>
                       <p className="font-medium">{pending.full_name}</p>
-                      <p className="text-sm text-muted-foreground">{pending.email}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {pending.email}
+                      </p>
                     </div>
                     <Button onClick={() => openApproveDialog(pending)}>
                       <UserCheck className="w-4 h-4 mr-2" />
@@ -424,14 +482,17 @@ export default function AdminDoctorsPage() {
               All Doctors
             </CardTitle>
             <CardDescription>
-              {doctors.length} doctor{doctors.length !== 1 ? 's' : ''} in the system
+              {doctors.length} doctor{doctors.length !== 1 ? "s" : ""} in the
+              system
             </CardDescription>
           </CardHeader>
           <CardContent>
             {doctors.length === 0 ? (
               <div className="text-center py-8">
                 <Stethoscope className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-muted-foreground">No doctors in the system yet</p>
+                <p className="text-muted-foreground">
+                  No doctors in the system yet
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -451,21 +512,29 @@ export default function AdminDoctorsPage() {
                       <TableRow key={doctor.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{doctor.profile?.full_name}</p>
-                            <p className="text-sm text-muted-foreground">{doctor.profile?.email}</p>
+                            <p className="font-medium">
+                              {doctor.profile?.full_name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {doctor.profile?.email}
+                            </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="gap-1">
                             <Building2 className="w-3 h-3" />
-                            {doctor.department?.name || 'N/A'}
+                            {doctor.department?.name || "N/A"}
                           </Badge>
                         </TableCell>
                         <TableCell>{doctor.specialization}</TableCell>
                         <TableCell>{doctor.experience_years} years</TableCell>
                         <TableCell>
-                          <Badge variant={doctor.is_available ? 'default' : 'secondary'}>
-                            {doctor.is_available ? 'Available' : 'Unavailable'}
+                          <Badge
+                            variant={
+                              doctor.is_available ? "default" : "secondary"
+                            }
+                          >
+                            {doctor.is_available ? "Available" : "Unavailable"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -482,7 +551,11 @@ export default function AdminDoctorsPage() {
                               size="sm"
                               variant="ghost"
                               onClick={() => toggleDoctorAvailability(doctor)}
-                              title={doctor.is_available ? 'Mark Unavailable' : 'Mark Available'}
+                              title={
+                                doctor.is_available
+                                  ? "Mark Unavailable"
+                                  : "Mark Available"
+                              }
                             >
                               {doctor.is_available ? (
                                 <UserX className="w-4 h-4" />
@@ -575,7 +648,10 @@ export default function AdminDoctorsPage() {
                 </div>
                 <div>
                   <Label>Consultation Duration</Label>
-                  <Select value={consultationDuration} onValueChange={setConsultationDuration}>
+                  <Select
+                    value={consultationDuration}
+                    onValueChange={setConsultationDuration}
+                  >
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
@@ -593,7 +669,10 @@ export default function AdminDoctorsPage() {
 
               <div>
                 <Label>Max Patients per Slot</Label>
-                <Select value={maxPatientsPerSlot} onValueChange={setMaxPatientsPerSlot}>
+                <Select
+                  value={maxPatientsPerSlot}
+                  onValueChange={setMaxPatientsPerSlot}
+                >
                   <SelectTrigger className="mt-1">
                     <SelectValue />
                   </SelectTrigger>
@@ -618,11 +697,14 @@ export default function AdminDoctorsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowApproveDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowApproveDialog(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={approveDoctor} disabled={saving}>
-                {saving ? 'Approving...' : 'Approve Doctor'}
+                {saving ? "Approving..." : "Approve Doctor"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -687,7 +769,10 @@ export default function AdminDoctorsPage() {
                 </div>
                 <div>
                   <Label>Consultation Duration</Label>
-                  <Select value={consultationDuration} onValueChange={setConsultationDuration}>
+                  <Select
+                    value={consultationDuration}
+                    onValueChange={setConsultationDuration}
+                  >
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
@@ -705,7 +790,10 @@ export default function AdminDoctorsPage() {
 
               <div>
                 <Label>Max Patients per Slot</Label>
-                <Select value={maxPatientsPerSlot} onValueChange={setMaxPatientsPerSlot}>
+                <Select
+                  value={maxPatientsPerSlot}
+                  onValueChange={setMaxPatientsPerSlot}
+                >
                   <SelectTrigger className="mt-1">
                     <SelectValue />
                   </SelectTrigger>
@@ -730,11 +818,14 @@ export default function AdminDoctorsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowEditDialog(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={updateDoctor} disabled={saving}>
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </DialogContent>

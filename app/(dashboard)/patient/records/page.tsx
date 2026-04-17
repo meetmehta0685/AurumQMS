@@ -61,7 +61,7 @@ export default function PatientRecordsPage() {
           .from('medical_records')
           .select(`
             id,
-            diagnosis,
+            diagnosis,x
             notes,
             created_at,
             doctor:doctors(

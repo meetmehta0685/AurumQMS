@@ -7,7 +7,7 @@
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('patient', 'doctor', 'admin')),
+  role VARCHAR(20) NOT NULL CHECK (role IN ('patient', 'doctor', 'admin', 'guest', 'staff', 'lab', 'pharma')),
   full_name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
   phone VARCHAR(20),
@@ -15,6 +15,94 @@ CREATE TABLE IF NOT EXISTS profiles (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Backward compatibility for existing databases where `profiles` was created
+-- without `user_id`.
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS user_id UUID;
+
+UPDATE profiles p
+SET user_id = p.id
+WHERE p.user_id IS NULL
+  AND EXISTS (
+    SELECT 1 FROM auth.users u WHERE u.id = p.id
+  );
+
+CREATE UNIQUE INDEX IF NOT EXISTS profiles_user_id_unique
+  ON profiles(user_id)
+  WHERE user_id IS NOT NULL;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'profiles_user_id_fkey'
+  ) THEN
+    ALTER TABLE profiles
+      ADD CONSTRAINT profiles_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END $$;
+
+ALTER TABLE profiles
+  DROP CONSTRAINT IF EXISTS profiles_role_check;
+
+ALTER TABLE profiles
+  ADD CONSTRAINT profiles_role_check
+  CHECK (role IN ('patient', 'doctor', 'admin', 'guest', 'staff', 'lab', 'pharma'));
+
+CREATE OR REPLACE FUNCTION public.current_profile_role()
+RETURNS TEXT
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT role
+  FROM public.profiles
+  WHERE user_id = auth.uid()
+  LIMIT 1;
+$$;
+
+REVOKE ALL ON FUNCTION public.current_profile_role() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.current_profile_role() TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.prevent_untrusted_profile_role_changes()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.user_id = auth.uid() AND NEW.role NOT IN ('patient', 'guest') THEN
+      RAISE EXCEPTION 'Self-service profile creation is limited to patient and guest roles';
+    END IF;
+
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'UPDATE'
+    AND OLD.user_id = auth.uid()
+    AND public.current_profile_role() <> 'admin'
+    AND NEW.role IS DISTINCT FROM OLD.role THEN
+    RAISE EXCEPTION 'Only admins can change profile roles';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS enforce_profile_role_writes ON profiles;
+
+CREATE TRIGGER enforce_profile_role_writes
+  BEFORE INSERT OR UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION public.prevent_untrusted_profile_role_changes();
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
@@ -24,18 +112,49 @@ DROP POLICY IF EXISTS "Users can read own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 DROP POLICY IF EXISTS "Anyone can read profiles" ON profiles;
 DROP POLICY IF EXISTS "Admins can read all profiles" ON profiles;
+DROP POLICY IF EXISTS "Clinical staff can read patient profiles" ON profiles;
+DROP POLICY IF EXISTS "Dispensing staff can read doctor profiles" ON profiles;
+DROP POLICY IF EXISTS "Operations can read all profiles" ON profiles;
+DROP POLICY IF EXISTS "Admins can manage all profiles" ON profiles;
 
 CREATE POLICY "Users can insert own profile"
   ON profiles FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (auth.uid() = user_id AND role IN ('patient', 'guest'));
 
-CREATE POLICY "Anyone can read profiles"
+CREATE POLICY "Users can read own profile"
   ON profiles FOR SELECT
-  USING (true);
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Clinical staff can read patient profiles"
+  ON profiles FOR SELECT
+  USING (
+    role = 'patient'
+    AND public.current_profile_role() IN ('doctor', 'lab', 'pharma')
+  );
+
+CREATE POLICY "Dispensing staff can read doctor profiles"
+  ON profiles FOR SELECT
+  USING (
+    role = 'doctor'
+    AND public.current_profile_role() IN ('lab', 'pharma')
+  );
+
+CREATE POLICY "Operations can read all profiles"
+  ON profiles FOR SELECT
+  USING (public.current_profile_role() IN ('admin', 'staff'));
 
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (
+    auth.uid() = user_id
+    AND role = public.current_profile_role()
+  );
+
+CREATE POLICY "Admins can manage all profiles"
+  ON profiles FOR ALL
+  USING (public.current_profile_role() = 'admin')
+  WITH CHECK (public.current_profile_role() = 'admin');
 
 -- =====================================================
 -- DEPARTMENTS TABLE (if not exists)
@@ -210,6 +329,43 @@ CREATE POLICY "Patients can read own records"
 CREATE POLICY "Doctors can create and read records"
   ON medical_records FOR ALL
   USING (doctor_id IN (SELECT id FROM doctors WHERE user_id = auth.uid()));
+
+-- =====================================================
+-- PRESCRIPTIONS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS prescriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  medical_record_id UUID NOT NULL REFERENCES medical_records(id) ON DELETE CASCADE,
+  patient_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  doctor_id UUID NOT NULL REFERENCES doctors(id),
+  medicine_name VARCHAR(255) NOT NULL,
+  dosage VARCHAR(100) NOT NULL,
+  frequency VARCHAR(255) NOT NULL,
+  duration VARCHAR(255) NOT NULL,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE prescriptions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Patients can read own prescriptions" ON prescriptions;
+DROP POLICY IF EXISTS "Doctors can manage own prescriptions" ON prescriptions;
+DROP POLICY IF EXISTS "Admins can manage prescriptions" ON prescriptions;
+
+CREATE POLICY "Patients can read own prescriptions"
+  ON prescriptions FOR SELECT
+  USING (patient_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+
+CREATE POLICY "Doctors can manage own prescriptions"
+  ON prescriptions FOR ALL
+  USING (doctor_id IN (SELECT id FROM doctors WHERE user_id = auth.uid()));
+
+CREATE POLICY "Admins can manage prescriptions"
+  ON prescriptions FOR ALL
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  );
 
 -- =====================================================
 -- TOKENS TABLE
@@ -588,6 +744,178 @@ CREATE POLICY "Admins can manage payments"
   );
 
 -- =====================================================
+-- LAB TEST ORDERS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS lab_test_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  appointment_id UUID REFERENCES appointments(id) ON DELETE SET NULL,
+  medical_record_id UUID REFERENCES medical_records(id) ON DELETE SET NULL,
+  patient_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  doctor_id UUID NOT NULL REFERENCES doctors(id),
+  test_name VARCHAR(255) NOT NULL,
+  instructions TEXT,
+  status VARCHAR(30) NOT NULL DEFAULT 'ordered'
+    CHECK (status IN ('ordered', 'sample_collected', 'processing', 'reported', 'cancelled')),
+  ordered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE lab_test_orders ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Patients can read own lab orders" ON lab_test_orders;
+DROP POLICY IF EXISTS "Doctors can manage own lab orders" ON lab_test_orders;
+DROP POLICY IF EXISTS "Admins can manage lab orders" ON lab_test_orders;
+DROP POLICY IF EXISTS "Lab staff can manage lab orders" ON lab_test_orders;
+
+CREATE POLICY "Patients can read own lab orders"
+  ON lab_test_orders FOR SELECT
+  USING (patient_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+
+CREATE POLICY "Doctors can manage own lab orders"
+  ON lab_test_orders FOR ALL
+  USING (doctor_id IN (SELECT id FROM doctors WHERE user_id = auth.uid()));
+
+CREATE POLICY "Lab staff can manage lab orders"
+  ON lab_test_orders FOR ALL
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'lab')
+  );
+
+CREATE POLICY "Admins can manage lab orders"
+  ON lab_test_orders FOR ALL
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  );
+
+-- =====================================================
+-- LAB REPORTS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS lab_reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES lab_test_orders(id) ON DELETE CASCADE,
+  patient_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  doctor_id UUID NOT NULL REFERENCES doctors(id),
+  report_title VARCHAR(255) NOT NULL,
+  report_url TEXT,
+  report_text TEXT,
+  reported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  verified_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE lab_reports ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Patients can read own lab reports" ON lab_reports;
+DROP POLICY IF EXISTS "Doctors can manage own lab reports" ON lab_reports;
+DROP POLICY IF EXISTS "Admins can manage lab reports" ON lab_reports;
+DROP POLICY IF EXISTS "Doctors can read own lab reports" ON lab_reports;
+DROP POLICY IF EXISTS "Lab staff can manage lab reports" ON lab_reports;
+
+CREATE POLICY "Patients can read own lab reports"
+  ON lab_reports FOR SELECT
+  USING (patient_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+
+CREATE POLICY "Doctors can read own lab reports"
+  ON lab_reports FOR SELECT
+  USING (doctor_id IN (SELECT id FROM doctors WHERE user_id = auth.uid()));
+
+CREATE POLICY "Lab staff can manage lab reports"
+  ON lab_reports FOR ALL
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'lab')
+  );
+
+CREATE POLICY "Admins can manage lab reports"
+  ON lab_reports FOR ALL
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  );
+
+-- =====================================================
+-- PHARMACY DISPENSES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS pharmacy_dispenses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  prescription_id UUID REFERENCES prescriptions(id) ON DELETE SET NULL,
+  patient_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  doctor_id UUID NOT NULL REFERENCES doctors(id),
+  medicine_name VARCHAR(255) NOT NULL,
+  dosage VARCHAR(100) NOT NULL,
+  frequency VARCHAR(255) NOT NULL,
+  duration VARCHAR(255) NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity >= 1),
+  dispense_status VARCHAR(30) NOT NULL DEFAULT 'pending'
+    CHECK (dispense_status IN ('pending', 'dispensed', 'cancelled')),
+  dispensed_at TIMESTAMP,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE pharmacy_dispenses ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Patients can read own pharmacy dispenses" ON pharmacy_dispenses;
+DROP POLICY IF EXISTS "Doctors can manage own pharmacy dispenses" ON pharmacy_dispenses;
+DROP POLICY IF EXISTS "Admins can manage pharmacy dispenses" ON pharmacy_dispenses;
+DROP POLICY IF EXISTS "Pharma staff can manage pharmacy dispenses" ON pharmacy_dispenses;
+
+CREATE POLICY "Patients can read own pharmacy dispenses"
+  ON pharmacy_dispenses FOR SELECT
+  USING (patient_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+
+CREATE POLICY "Pharma staff can manage pharmacy dispenses"
+  ON pharmacy_dispenses FOR ALL
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'pharma')
+  );
+
+CREATE POLICY "Admins can manage pharmacy dispenses"
+  ON pharmacy_dispenses FOR ALL
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  );
+
+-- =====================================================
+-- DISCHARGE SUMMARIES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS discharge_summaries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  appointment_id UUID NOT NULL UNIQUE REFERENCES appointments(id) ON DELETE CASCADE,
+  patient_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  doctor_id UUID NOT NULL REFERENCES doctors(id),
+  summary_text TEXT,
+  discharge_status VARCHAR(30) NOT NULL DEFAULT 'draft'
+    CHECK (discharge_status IN ('draft', 'discharged')),
+  discharged_at TIMESTAMP,
+  generated_pdf_url TEXT,
+  generated_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE discharge_summaries ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Patients can read own discharge summaries" ON discharge_summaries;
+DROP POLICY IF EXISTS "Doctors can manage own discharge summaries" ON discharge_summaries;
+DROP POLICY IF EXISTS "Admins can manage discharge summaries" ON discharge_summaries;
+
+CREATE POLICY "Patients can read own discharge summaries"
+  ON discharge_summaries FOR SELECT
+  USING (patient_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+
+CREATE POLICY "Doctors can manage own discharge summaries"
+  ON discharge_summaries FOR ALL
+  USING (doctor_id IN (SELECT id FROM doctors WHERE user_id = auth.uid()));
+
+CREATE POLICY "Admins can manage discharge summaries"
+  ON discharge_summaries FOR ALL
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  );
+
+-- =====================================================
 -- AUDIT LOGS TABLE
 -- =====================================================
 CREATE TABLE IF NOT EXISTS audit_logs (
@@ -606,11 +934,16 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Anyone can insert audit logs" ON audit_logs;
+DROP POLICY IF EXISTS "Authenticated users can insert own audit logs" ON audit_logs;
 DROP POLICY IF EXISTS "Admins can read audit logs" ON audit_logs;
 
-CREATE POLICY "Anyone can insert audit logs"
+CREATE POLICY "Authenticated users can insert own audit logs"
   ON audit_logs FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    auth.uid() IS NOT NULL
+    AND COALESCE(actor_user_id, auth.uid()) = auth.uid()
+    AND COALESCE(actor_role, public.current_profile_role()) = public.current_profile_role()
+  );
 
 CREATE POLICY "Admins can read audit logs"
   ON audit_logs FOR SELECT

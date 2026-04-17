@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Lora, IBM_Plex_Mono } from "next/font/google";
+import { Manrope, Fraunces, IBM_Plex_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const manrope = Manrope({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
-const lora = Lora({
+const fraunces = Fraunces({
   variable: "--font-serif",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -23,8 +23,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hospital Management System",
-  description: "Streamlined appointment booking and hospital management platform",
+  title: "Hospitality Operations Platform",
+  description: "Elevated guest experience and hotel operations management platform",
 };
 
 export default function RootLayout({
@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${plusJakartaSans.variable} ${lora.variable} ${ibmPlexMono.variable} antialiased font-sans`}
+        className={`${manrope.variable} ${fraunces.variable} ${ibmPlexMono.variable} antialiased font-sans`}
       >
         <ThemeProvider
           attribute="class"

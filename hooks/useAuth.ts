@@ -1,35 +1,108 @@
-import { useEffect, useState, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import type { Profile } from '@/types';
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { isSelfServiceRole } from "@/lib/auth/roles";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import type { Profile } from "@/types";
+
+const ALLOWED_ROLES = new Set([
+  "patient",
+  "doctor",
+  "admin",
+  "guest",
+  "staff",
+  "lab",
+  "pharma",
+]);
+
+function resolveRole(role: unknown): Profile["role"] {
+  if (typeof role === "string" && ALLOWED_ROLES.has(role)) {
+    return role as Profile["role"];
+  }
+  return "patient";
+}
 
 export function useAuth() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const pathname = usePathname();
   const supabaseRef = useRef(createClient());
 
   useEffect(() => {
     let isMounted = true;
     const supabase = supabaseRef.current;
 
-    const fetchProfile = async (userId: string) => {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+    const fetchProfile = async (currentUser: User) => {
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
 
-      if (!isMounted) return;
+        if (!isMounted) return;
 
-      if (profileError) {
-        setError(profileError.message);
-        setProfile(null);
-      } else {
-        setProfile(profileData);
+        if (profileError) {
+          setError(profileError.message);
+          setProfile(null);
+          return;
+        }
+
+        if (profileData) {
+          setProfile(profileData);
+          return;
+        }
+
+        const metadata = currentUser?.user_metadata || {};
+        const generatedFullName =
+          typeof metadata.full_name === "string" &&
+          metadata.full_name.trim().length > 0
+            ? metadata.full_name.trim()
+            : currentUser?.email?.split("@")[0] || "User";
+
+        if (
+          typeof metadata.role === "string" &&
+          !isSelfServiceRole(metadata.role)
+        ) {
+          setError("Your account is awaiting administrator role assignment.");
+          setProfile(null);
+          return;
+        }
+
+        const generatedRole = isSelfServiceRole(metadata.role)
+          ? metadata.role
+          : resolveRole(metadata.role);
+
+        const { data: insertedProfile, error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            user_id: currentUser.id,
+            role: generatedRole,
+            full_name: generatedFullName,
+            email: currentUser?.email || "",
+          })
+          .select("*")
+          .maybeSingle();
+
+        if (!isMounted) return;
+
+        if (insertError) {
+          setError(insertError.message);
+          setProfile(null);
+          return;
+        }
+
+        setProfile(insertedProfile || null);
+      } catch (err: unknown) {
+        if (!isMounted) return;
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+        setError(err instanceof Error ? err.message : "Failed to load profile");
       }
     };
 
@@ -49,11 +122,13 @@ export function useAuth() {
         }
 
         setUser(currentUser);
-        await fetchProfile(currentUser.id);
-      } catch (err: any) {
-        if (isMounted) {
-          setError(err.message);
+        await fetchProfile(currentUser);
+      } catch (err: unknown) {
+        if (!isMounted) return;
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
         }
+        setError(err instanceof Error ? err.message : "Failed to load session");
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -64,21 +139,21 @@ export function useAuth() {
     getAuth();
 
     // Subscribe to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!isMounted) return;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
 
-        if (event === 'SIGNED_OUT' || !session?.user) {
-          setUser(null);
-          setProfile(null);
-          setIsLoading(false);
-        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          setUser(session.user);
-          await fetchProfile(session.user.id);
-          setIsLoading(false);
-        }
+      if (event === "SIGNED_OUT" || !session?.user) {
+        setUser(null);
+        setProfile(null);
+        setIsLoading(false);
+      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        setUser(session.user);
+        await fetchProfile(session.user);
+        setIsLoading(false);
       }
-    );
+    });
 
     return () => {
       isMounted = false;
@@ -93,7 +168,7 @@ export function useAuth() {
     setUser(null);
     setProfile(null);
     setIsLoading(false);
-    router.push('/login');
+    router.push("/login");
   };
 
   return { user, profile, isLoading, error, logout };

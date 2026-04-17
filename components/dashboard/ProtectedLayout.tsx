@@ -1,16 +1,31 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/hooks/useAuth';
-import { Skeleton } from '@/components/ui/skeleton';
-import { redirect } from 'next/navigation';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
   allowedRoles?: string[];
 }
 
-export function ProtectedLayout({ children, allowedRoles = ['patient', 'doctor', 'admin'] }: ProtectedLayoutProps) {
+export function ProtectedLayout({
+  children,
+  allowedRoles = ["patient", "doctor", "admin"],
+}: ProtectedLayoutProps) {
+  const router = useRouter();
   const { profile, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    if (!profile || !allowedRoles.includes(profile.role)) {
+      router.replace("/login");
+    }
+  }, [allowedRoles, isLoading, profile, router]);
 
   if (isLoading) {
     return (
@@ -22,11 +37,11 @@ export function ProtectedLayout({ children, allowedRoles = ['patient', 'doctor',
   }
 
   if (!profile) {
-    redirect('/login');
+    return null;
   }
 
   if (!allowedRoles.includes(profile.role)) {
-    redirect('/login');
+    return null;
   }
 
   return <>{children}</>;

@@ -1,25 +1,30 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import Link from 'next/link';
-import { ArrowLeft, Clock, Save, Plus, Trash2, Calendar } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+} from "@/components/ui/select";
+import Link from "next/link";
+import { ArrowLeft, Clock, Save, Plus, Trash2, Calendar } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface DoctorAvailability {
   id?: string;
@@ -38,13 +43,13 @@ interface DoctorSettings {
 }
 
 const DAYS_OF_WEEK = [
-  { value: 0, label: 'Sunday' },
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
+  { value: 0, label: "Sunday" },
+  { value: 1, label: "Monday" },
+  { value: 2, label: "Tuesday" },
+  { value: 3, label: "Wednesday" },
+  { value: 4, label: "Thursday" },
+  { value: 5, label: "Friday" },
+  { value: 6, label: "Saturday" },
 ];
 
 export default function DoctorSchedulePage() {
@@ -66,9 +71,11 @@ export default function DoctorSchedulePage() {
 
       try {
         const { data: doctor } = await supabase
-          .from('doctors')
-          .select('id, consultation_duration, max_patients_per_slot, is_available')
-          .eq('user_id', profile.user_id)
+          .from("doctors")
+          .select(
+            "id, consultation_duration, max_patients_per_slot, is_available",
+          )
+          .eq("user_id", profile.user_id)
           .single();
 
         if (!doctor) {
@@ -85,16 +92,16 @@ export default function DoctorSchedulePage() {
 
         // Fetch availability
         const { data: availabilityData } = await supabase
-          .from('doctor_availability')
-          .select('*')
-          .eq('doctor_id', doctor.id)
-          .order('day_of_week', { ascending: true });
+          .from("doctor_availability")
+          .select("*")
+          .eq("doctor_id", doctor.id)
+          .order("day_of_week", { ascending: true });
 
         if (availabilityData) {
           setAvailability(availabilityData);
         }
       } catch (error) {
-        console.error('Error fetching doctor data:', error);
+        console.error("Error fetching doctor data:", error);
       } finally {
         setLoadingData(false);
       }
@@ -109,11 +116,13 @@ export default function DoctorSchedulePage() {
     if (!doctorId) return;
 
     // Find a day that doesn't have availability yet
-    const existingDays = availability.map(a => a.day_of_week);
-    const availableDay = DAYS_OF_WEEK.find(d => !existingDays.includes(d.value));
+    const existingDays = availability.map((a) => a.day_of_week);
+    const availableDay = DAYS_OF_WEEK.find(
+      (d) => !existingDays.includes(d.value),
+    );
 
     if (!availableDay) {
-      toast.error('All days already have availability set');
+      toast.error("All days already have availability set");
       return;
     }
 
@@ -122,8 +131,8 @@ export default function DoctorSchedulePage() {
       {
         doctor_id: doctorId,
         day_of_week: availableDay.value,
-        start_time: '09:00',
-        end_time: '17:00',
+        start_time: "09:00",
+        end_time: "17:00",
         is_blocked: false,
         reason: null,
       },
@@ -142,18 +151,18 @@ export default function DoctorSchedulePage() {
     if (slot.id) {
       // Delete from database
       const { error } = await supabase
-        .from('doctor_availability')
+        .from("doctor_availability")
         .delete()
-        .eq('id', slot.id);
+        .eq("id", slot.id);
 
       if (error) {
-        toast.error('Failed to delete slot');
+        toast.error("Failed to delete slot");
         return;
       }
     }
 
     setAvailability(availability.filter((_, i) => i !== index));
-    toast.success('Slot removed');
+    toast.success("Slot removed");
   };
 
   const saveSettings = async () => {
@@ -164,13 +173,13 @@ export default function DoctorSchedulePage() {
     try {
       // Update doctor settings
       const { error: settingsError } = await supabase
-        .from('doctors')
+        .from("doctors")
         .update({
           consultation_duration: settings.consultation_duration,
           max_patients_per_slot: settings.max_patients_per_slot,
           is_available: settings.is_available,
         })
-        .eq('id', doctorId);
+        .eq("id", doctorId);
 
       if (settingsError) throw settingsError;
 
@@ -179,7 +188,7 @@ export default function DoctorSchedulePage() {
         if (slot.id) {
           // Update existing
           const { error } = await supabase
-            .from('doctor_availability')
+            .from("doctor_availability")
             .update({
               day_of_week: slot.day_of_week,
               start_time: slot.start_time,
@@ -187,13 +196,13 @@ export default function DoctorSchedulePage() {
               is_blocked: slot.is_blocked,
               reason: slot.reason,
             })
-            .eq('id', slot.id);
+            .eq("id", slot.id);
 
           if (error) throw error;
         } else {
           // Insert new
           const { data, error } = await supabase
-            .from('doctor_availability')
+            .from("doctor_availability")
             .insert({
               doctor_id: doctorId,
               day_of_week: slot.day_of_week,
@@ -208,7 +217,7 @@ export default function DoctorSchedulePage() {
           if (error) throw error;
 
           // Update local state with new ID
-          const slotIndex = availability.findIndex(a => a === slot);
+          const slotIndex = availability.findIndex((a) => a === slot);
           if (slotIndex !== -1 && data) {
             const updated = [...availability];
             updated[slotIndex] = data;
@@ -217,10 +226,10 @@ export default function DoctorSchedulePage() {
         }
       }
 
-      toast.success('Settings saved successfully');
+      toast.success("Settings saved successfully");
     } catch (error) {
-      console.error('Error saving settings:', error);
-      toast.error('Failed to save settings');
+      console.error("Error saving settings:", error);
+      toast.error("Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -243,7 +252,9 @@ export default function DoctorSchedulePage() {
         <div className="max-w-4xl mx-auto">
           <Card>
             <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">Doctor profile not found. Please contact administrator.</p>
+              <p className="text-muted-foreground">
+                Doctor profile not found. Please contact administrator.
+              </p>
               <Link href="/doctor">
                 <Button className="mt-4">Back to Dashboard</Button>
               </Link>
@@ -267,13 +278,17 @@ export default function DoctorSchedulePage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">My Schedule</h1>
-              <p className="text-muted-foreground">Configure your availability</p>
+              <h1 className="text-2xl font-bold text-foreground">
+                My Schedule
+              </h1>
+              <p className="text-muted-foreground">
+                Configure your availability
+              </p>
             </div>
           </div>
           <Button onClick={saveSettings} disabled={saving}>
             <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
 
@@ -284,17 +299,23 @@ export default function DoctorSchedulePage() {
               <Clock className="w-5 h-5" />
               Consultation Settings
             </CardTitle>
-            <CardDescription>Configure your consultation preferences</CardDescription>
+            <CardDescription>
+              Configure your consultation preferences
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <Label>Available for Appointments</Label>
-                <p className="text-sm text-muted-foreground">Toggle to accept new appointments</p>
+                <p className="text-sm text-muted-foreground">
+                  Toggle to accept new appointments
+                </p>
               </div>
               <Switch
                 checked={settings.is_available}
-                onCheckedChange={(checked) => setSettings({ ...settings, is_available: checked })}
+                onCheckedChange={(checked) =>
+                  setSettings({ ...settings, is_available: checked })
+                }
               />
             </div>
 
@@ -304,7 +325,10 @@ export default function DoctorSchedulePage() {
                 <Select
                   value={settings.consultation_duration.toString()}
                   onValueChange={(value) =>
-                    setSettings({ ...settings, consultation_duration: parseInt(value) })
+                    setSettings({
+                      ...settings,
+                      consultation_duration: parseInt(value),
+                    })
                   }
                 >
                   <SelectTrigger className="mt-1">
@@ -326,7 +350,10 @@ export default function DoctorSchedulePage() {
                 <Select
                   value={settings.max_patients_per_slot.toString()}
                   onValueChange={(value) =>
-                    setSettings({ ...settings, max_patients_per_slot: parseInt(value) })
+                    setSettings({
+                      ...settings,
+                      max_patients_per_slot: parseInt(value),
+                    })
                   }
                 >
                   <SelectTrigger className="mt-1">
@@ -354,7 +381,9 @@ export default function DoctorSchedulePage() {
                   <Calendar className="w-5 h-5" />
                   Weekly Availability
                 </CardTitle>
-                <CardDescription>Set your working hours for each day</CardDescription>
+                <CardDescription>
+                  Set your working hours for each day
+                </CardDescription>
               </div>
               <Button onClick={addAvailabilitySlot} variant="outline" size="sm">
                 <Plus className="w-4 h-4 mr-2" />
@@ -366,7 +395,9 @@ export default function DoctorSchedulePage() {
             {availability.length === 0 ? (
               <div className="text-center py-8">
                 <Calendar className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-muted-foreground mb-4">No availability set</p>
+                <p className="text-muted-foreground mb-4">
+                  No availability set
+                </p>
                 <Button onClick={addAvailabilitySlot}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Availability
@@ -378,7 +409,9 @@ export default function DoctorSchedulePage() {
                   <div
                     key={slot.id || index}
                     className={`p-4 rounded-lg border ${
-                      slot.is_blocked ? 'bg-destructive/10 border-destructive/20' : 'bg-muted border-border'
+                      slot.is_blocked
+                        ? "bg-destructive/10 border-destructive/20"
+                        : "bg-muted border-border"
                     }`}
                   >
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
@@ -387,7 +420,11 @@ export default function DoctorSchedulePage() {
                         <Select
                           value={slot.day_of_week.toString()}
                           onValueChange={(value) =>
-                            updateAvailabilitySlot(index, 'day_of_week', parseInt(value))
+                            updateAvailabilitySlot(
+                              index,
+                              "day_of_week",
+                              parseInt(value),
+                            )
                           }
                         >
                           <SelectTrigger className="mt-1">
@@ -395,7 +432,10 @@ export default function DoctorSchedulePage() {
                           </SelectTrigger>
                           <SelectContent>
                             {DAYS_OF_WEEK.map((day) => (
-                              <SelectItem key={day.value} value={day.value.toString()}>
+                              <SelectItem
+                                key={day.value}
+                                value={day.value.toString()}
+                              >
                                 {day.label}
                               </SelectItem>
                             ))}
@@ -409,7 +449,11 @@ export default function DoctorSchedulePage() {
                           type="time"
                           value={slot.start_time}
                           onChange={(e) =>
-                            updateAvailabilitySlot(index, 'start_time', e.target.value)
+                            updateAvailabilitySlot(
+                              index,
+                              "start_time",
+                              e.target.value,
+                            )
                           }
                           className="mt-1"
                         />
@@ -421,7 +465,11 @@ export default function DoctorSchedulePage() {
                           type="time"
                           value={slot.end_time}
                           onChange={(e) =>
-                            updateAvailabilitySlot(index, 'end_time', e.target.value)
+                            updateAvailabilitySlot(
+                              index,
+                              "end_time",
+                              e.target.value,
+                            )
                           }
                           className="mt-1"
                         />
@@ -431,7 +479,7 @@ export default function DoctorSchedulePage() {
                         <Switch
                           checked={slot.is_blocked}
                           onCheckedChange={(checked) =>
-                            updateAvailabilitySlot(index, 'is_blocked', checked)
+                            updateAvailabilitySlot(index, "is_blocked", checked)
                           }
                         />
                         <Label className="text-sm">Blocked</Label>
@@ -454,9 +502,13 @@ export default function DoctorSchedulePage() {
                         <Label>Reason (Optional)</Label>
                         <Input
                           placeholder="e.g., Personal leave, Conference"
-                          value={slot.reason || ''}
+                          value={slot.reason || ""}
                           onChange={(e) =>
-                            updateAvailabilitySlot(index, 'reason', e.target.value || null)
+                            updateAvailabilitySlot(
+                              index,
+                              "reason",
+                              e.target.value || null,
+                            )
                           }
                           className="mt-1"
                         />
