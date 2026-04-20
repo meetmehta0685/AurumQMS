@@ -132,4 +132,4 @@ Hospitality module:
 - shadcn/ui: https://ui.shadcn.com
 - Tailwind CSS: https://tailwindcss.com
 
-## Website: aurum-qms.vercel.app
+## Website: https://aurum-qms.vercel.app
