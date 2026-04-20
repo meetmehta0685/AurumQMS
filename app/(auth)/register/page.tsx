@@ -6,12 +6,17 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  BriefcaseMedical,
+  FlaskConical,
+  Shield,
   ArrowLeft,
   ConciergeBell,
   Lock,
   Mail,
+  Stethoscope,
   User,
   Users,
+  UserCog,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SELF_SERVICE_ROLES } from "@/lib/auth/roles";
@@ -39,7 +44,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const roles = [
   { value: "patient", label: "Patient", icon: Users },
+  { value: "doctor", label: "Doctor", icon: Stethoscope },
+  { value: "admin", label: "Admin", icon: Shield },
   { value: "guest", label: "Guest", icon: ConciergeBell },
+  { value: "staff", label: "Staff", icon: UserCog },
+  { value: "lab", label: "Lab", icon: FlaskConical },
+  { value: "pharma", label: "Pharma", icon: BriefcaseMedical },
 ] as const;
 
 export default function RegisterPage() {
@@ -142,10 +152,9 @@ export default function RegisterPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>Self-service signup is limited to guest and patient access.</p>
+              <p>Choose the role that matches your access needs.</p>
               <p>
-                Clinical, pharmacy, laboratory, and operations accounts must be
-                provisioned by an administrator.
+                You will be routed to the matching workspace after verification.
               </p>
             </CardContent>
           </Card>
@@ -154,8 +163,7 @@ export default function RegisterPage() {
             <CardHeader>
               <CardTitle>Account details</CardTitle>
               <CardDescription>
-                Create credentials and choose the self-service role for this
-                account.
+                Create credentials and choose the role for this account.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -240,7 +248,7 @@ export default function RegisterPage() {
                           onValueChange={field.onChange}
                           className="w-full"
                         >
-                          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0">
+                          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 lg:grid-cols-4">
                             {roles.map((role) => {
                               const Icon = role.icon;
 

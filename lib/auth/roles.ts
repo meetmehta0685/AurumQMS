@@ -1,6 +1,14 @@
 import type { UserRole } from "@/types";
 
-export const SELF_SERVICE_ROLES = ["patient", "guest"] as const;
+export const SELF_SERVICE_ROLES = [
+  "patient",
+  "doctor",
+  "admin",
+  "guest",
+  "staff",
+  "lab",
+  "pharma",
+] as const;
 
 export type SelfServiceRole = (typeof SELF_SERVICE_ROLES)[number];
 
