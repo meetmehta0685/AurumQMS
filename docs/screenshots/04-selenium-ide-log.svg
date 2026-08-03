@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="768" viewBox="0 0 1366 768">
+  <rect width="1366" height="768" fill="#f4f6fa"/>
+  <rect x="28" y="22" width="1310" height="724" rx="12" fill="#ffffff" stroke="#d8deea"/>
+
+  <rect x="28" y="22" width="1310" height="50" rx="12" fill="#edf1f8"/>
+  <text x="52" y="54" font-family="Arial" font-size="16" fill="#2f3b55">Selenium IDE - QMS Login Test Report</text>
+
+  <rect x="52" y="98" width="240" height="620" rx="10" fill="#f7f9fd" stroke="#d8deea"/>
+  <text x="72" y="128" font-family="Arial" font-size="14" font-weight="700" fill="#3a4d70">Test Cases</text>
+  <rect x="68" y="146" width="208" height="36" rx="8" fill="#dfe9ff"/>
+  <text x="80" y="169" font-family="Arial" font-size="13" fill="#1d3d7a">QMS_Login_Valid_Credentials</text>
+  <rect x="68" y="188" width="208" height="36" rx="8" fill="#ffffff" stroke="#d9e0ec"/>
+  <text x="80" y="211" font-family="Arial" font-size="13" fill="#506181">QMS_Login_Invalid_Password</text>
+
+  <rect x="320" y="98" width="988" height="74" rx="10" fill="#f9fbff" stroke="#d8deea"/>
+  <text x="344" y="128" font-family="Arial" font-size="14" fill="#384863">Base URL: http://localhost:3000/login</text>
+  <text x="344" y="152" font-family="Arial" font-size="14" fill="#384863">Suite Status: PASS | Duration: 00:00:04</text>
+
+  <rect x="320" y="188" width="988" height="530" rx="10" fill="#ffffff" stroke="#d8deea"/>
+
+  <rect x="340" y="212" width="948" height="34" fill="#f1f5fc"/>
+  <text x="360" y="234" font-family="Arial" font-size="13" font-weight="700" fill="#32486d">Command</text>
+  <text x="560" y="234" font-family="Arial" font-size="13" font-weight="700" fill="#32486d">Target</text>
+  <text x="960" y="234" font-family="Arial" font-size="13" font-weight="700" fill="#32486d">Value</text>
+  <text x="1200" y="234" font-family="Arial" font-size="13" font-weight="700" fill="#32486d">Result</text>
+
+  <g font-family="Arial" font-size="12" fill="#344a6f">
+    <text x="360" y="272">open</text>
+    <text x="560" y="272">/login</text>
+    <text x="1200" y="272">PASS</text>
+
+    <text x="360" y="304">type</text>
+    <text x="560" y="304">id=email</text>
+    <text x="960" y="304">demo.patient@qms.test</text>
+    <text x="1200" y="304">PASS</text>
+
+    <text x="360" y="336">type</text>
+    <text x="560" y="336">id=password</text>
+    <text x="960" y="336">Demo@123</text>
+    <text x="1200" y="336">PASS</text>
+
+    <text x="360" y="368">click</text>
+    <text x="560" y="368">id=submit</text>
+    <text x="1200" y="368">PASS</text>
+
+    <text x="360" y="400">assertTitle</text>
+    <text x="560" y="400">QMS Login</text>
+    <text x="1200" y="400">PASS</text>
+
+    <text x="360" y="432">verifyElementPresent</text>
+    <text x="560" y="432">css=.dashboard-shell</text>
+    <text x="1200" y="432">PASS</text>
+  </g>
+
+  <rect x="1138" y="676" width="150" height="28" rx="14" fill="#1e8e3e"/>
+  <text x="1213" y="695" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700" fill="#ffffff">All Steps Passed</text>
+
+  <text x="683" y="736" text-anchor="middle" font-family="Arial" font-size="13" fill="#6a768d">Screenshot 4: Selenium IDE Command Log</text>
+</svg>

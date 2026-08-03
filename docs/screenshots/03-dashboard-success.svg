@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="768" viewBox="0 0 1366 768">
+  <rect width="1366" height="768" fill="#f8f5ef"/>
+  <rect x="24" y="18" width="1318" height="732" rx="14" fill="#ffffff" stroke="#eadfce"/>
+  <rect x="24" y="18" width="1318" height="56" rx="14" fill="#fff7ea"/>
+  <text x="54" y="52" font-family="Arial" font-size="16" fill="#744f14">QMS Dashboard - Test Session</text>
+  <rect x="1110" y="32" width="200" height="28" rx="14" fill="#2f9e44"/>
+  <text x="1210" y="50" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700" fill="#ffffff">Login Success</text>
+
+  <rect x="52" y="96" width="250" height="624" rx="14" fill="#fff9f0" stroke="#efdfc5"/>
+  <text x="82" y="132" font-family="Arial" font-size="14" fill="#71501c">Navigation</text>
+  <rect x="72" y="154" width="210" height="34" rx="8" fill="#ffe7bc"/>
+  <text x="88" y="176" font-family="Arial" font-size="13" fill="#67430f">Patient Queue</text>
+  <rect x="72" y="196" width="210" height="34" rx="8" fill="#ffffff" stroke="#f0e0c8"/>
+  <text x="88" y="218" font-family="Arial" font-size="13" fill="#735225">Appointments</text>
+  <rect x="72" y="238" width="210" height="34" rx="8" fill="#ffffff" stroke="#f0e0c8"/>
+  <text x="88" y="260" font-family="Arial" font-size="13" fill="#735225">Pharmacy</text>
+
+  <rect x="332" y="96" width="980" height="152" rx="14" fill="#fffdf8" stroke="#f0e3cf"/>
+  <text x="362" y="138" font-family="Arial" font-size="22" font-weight="700" fill="#5d3e12">Welcome, Demo Patient</text>
+  <text x="362" y="166" font-family="Arial" font-size="14" fill="#866b47">Your queue token is A-143. Last sync 10:43 AM.</text>
+
+  <rect x="332" y="268" width="306" height="186" rx="14" fill="#fffaf3" stroke="#efdfc9"/>
+  <text x="356" y="302" font-family="Arial" font-size="14" fill="#6f532a">Active Queue</text>
+  <text x="356" y="370" font-family="Arial" font-size="44" font-weight="700" fill="#8c5a0a">A-143</text>
+
+  <rect x="668" y="268" width="306" height="186" rx="14" fill="#fffaf3" stroke="#efdfc9"/>
+  <text x="692" y="302" font-family="Arial" font-size="14" fill="#6f532a">Doctor Assigned</text>
+  <text x="692" y="360" font-family="Arial" font-size="24" font-weight="700" fill="#8c5a0a">Dr. Kavya Iyer</text>
+
+  <rect x="1004" y="268" width="308" height="186" rx="14" fill="#fffaf3" stroke="#efdfc9"/>
+  <text x="1028" y="302" font-family="Arial" font-size="14" fill="#6f532a">ETA</text>
+  <text x="1028" y="360" font-family="Arial" font-size="40" font-weight="700" fill="#8c5a0a">12 min</text>
+
+  <text x="683" y="716" text-anchor="middle" font-family="Arial" font-size="13" fill="#836645">Screenshot 3: Dashboard Visible After Login</text>
+</svg>

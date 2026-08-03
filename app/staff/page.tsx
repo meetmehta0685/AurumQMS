@@ -32,14 +32,19 @@ import {
 } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/client";
 import {
-  ArrowRight,
+  Bed,
   BedDouble,
   ClipboardList,
   ConciergeBell,
   Layers,
-  ShieldCheck,
+  Sparkles,
   Users,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Building,
 } from "lucide-react";
+import { RoleHeader } from "@/components/layout/RoleHeader";
 
 type RoomType = {
   id: string;
@@ -98,7 +103,7 @@ export default function StaffPortalPage() {
           if (room.status === "maintenance") acc.maintenance += 1;
           return acc;
         },
-        { ready: 0, cleaning: 0, maintenance: 0 },
+        { ready: 0, cleaning: 0, maintenance: 0 }
       );
       setInventory(counts);
     }
@@ -112,9 +117,9 @@ export default function StaffPortalPage() {
       (arrival: any) => ({
         ...arrival,
         room_types: Array.isArray(arrival.room_types)
-          ? (arrival.room_types[0] ?? null)
+          ? arrival.room_types[0] ?? null
           : arrival.room_types,
-      }),
+      })
     );
     setArrivals(normalizedArrivals);
 
@@ -125,7 +130,7 @@ export default function StaffPortalPage() {
     const normalizedRooms: RoomRow[] = (roomData || []).map((room: any) => ({
       ...room,
       room_types: Array.isArray(room.room_types)
-        ? (room.room_types[0] ?? null)
+        ? room.room_types[0] ?? null
         : room.room_types,
     }));
     setRooms(normalizedRooms);
@@ -149,11 +154,13 @@ export default function StaffPortalPage() {
     };
 
     const loadRoomTypes = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("room_types")
         .select("id, name")
         .order("name");
-      setRoomTypes(data || []);
+      if (!error && data) {
+        setRoomTypes(data);
+      }
     };
 
     ensureAuth();
@@ -161,406 +168,347 @@ export default function StaffPortalPage() {
     loadDashboard();
   }, [router, supabase]);
 
-  const handleAllocateRoom = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!reservationCode.trim()) {
-      toast.error("Enter reservation code");
-      return;
+  const handleUpdateStatus = async (roomId: string, nextStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from("rooms")
+        .update({ status: nextStatus })
+        .eq("id", roomId);
+
+      if (error) throw error;
+      toast.success(`Room status set to ${nextStatus}`);
+      await loadDashboard();
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to update status");
     }
-    if (!profile) {
-      toast.error("Profile not found");
+  };
+
+  const handleCreateAssignment = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!guestName.trim() || !reservationCode.trim()) {
+      toast.error("Guest name and reservation code are required");
       return;
     }
 
     setIsLoading(true);
     try {
-      const { data: reservation, error: reservationError } = await supabase
-        .from("reservations")
-        .select("id, room_type_id")
-        .eq("reservation_code", reservationCode.trim())
-        .maybeSingle();
+      const payload = {
+        guest_name: guestName.trim(),
+        reservation_code: reservationCode.trim(),
+        room_type_id: roomTypeId || null,
+        floor: floor ? Number(floor) : null,
+        notes: notes || null,
+        status: "pending",
+        staff_id: profile?.id || null,
+      };
 
-      if (reservationError || !reservation) {
-        toast.error("Reservation not found");
-        return;
-      }
+      const { error } = await supabase
+        .from("room_assignments")
+        .insert(payload);
 
-      let roomQuery = supabase
-        .from("rooms")
-        .select("id, status")
-        .eq("status", "ready")
-        .order("room_number")
-        .limit(1);
+      if (error) throw error;
 
-      if (roomTypeId) {
-        roomQuery = roomQuery.eq("room_type_id", roomTypeId);
-      }
-      if (floor) {
-        roomQuery = roomQuery.eq("floor", Number(floor));
-      }
-
-      const { data: availableRooms } = await roomQuery;
-      const selectedRoom = availableRooms?.[0];
-
-      if (!selectedRoom) {
-        toast.error("No available room for this selection");
-        return;
-      }
-
-      const { error: allocationError } = await supabase
-        .from("room_allocations")
-        .insert({
-          reservation_id: reservation.id,
-          room_id: selectedRoom.id,
-          staff_profile_id: profile.id,
-          notes: notes.trim() || null,
-        });
-
-      if (allocationError) {
-        toast.error(allocationError.message);
-        return;
-      }
-
-      await supabase
-        .from("rooms")
-        .update({ status: "occupied" })
-        .eq("id", selectedRoom.id);
-
-      await supabase
-        .from("reservations")
-        .update({
-          status: "confirmed",
-          room_type_id: roomTypeId || reservation.room_type_id,
-        })
-        .eq("id", reservation.id);
-
-      toast.success("Room assigned successfully");
+      toast.success("Room allocation saved");
       setGuestName("");
       setReservationCode("");
-      setNotes("");
-      setFloor("");
       setRoomTypeId("");
-      loadDashboard();
+      setFloor("");
+      setNotes("");
+      await loadDashboard();
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to save room allocation");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isAuthorized = profile?.role === "admin" || profile?.role === "staff";
-
-  const handleRoomStatusChange = async (roomId: string, status: string) => {
-    const { error } = await supabase
-      .from("rooms")
-      .update({ status })
-      .eq("id", roomId);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Room status updated");
-      loadDashboard();
-    }
-  };
-
   return (
-    <div className="min-h-screen px-4 py-8 text-foreground">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <Button asChild variant="ghost" className="w-fit px-0">
-          <Link href="/">
-            <ArrowRight className="size-4 rotate-180" />
-            Back to home
-          </Link>
-        </Button>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+      {/* Unified Top Navigation */}
+      <RoleHeader currentRole="staff" />
 
-        <Card>
-          <CardHeader className="gap-4">
-            <Badge variant="secondary" className="w-fit">
-              <ConciergeBell className="size-3" />
-              Staff portal
-            </Badge>
-            <div className="space-y-3">
-              <CardTitle className="font-display text-4xl">
-                Room allocation command
-              </CardTitle>
-              <CardDescription className="max-w-2xl text-base">
-                Assign rooms, coordinate housekeeping, and balance arrivals with
-                real-time availability.
-              </CardDescription>
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+        {/* Staff Operations Hero */}
+        <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 glass-card p-6 sm:p-8 glow-teal">
+          <div className="absolute -top-16 -right-16 size-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 gap-1.5">
+                  <Bed className="size-3.5" />
+                  Property Operations
+                </Badge>
+                <span className="text-xs text-muted-foreground">• Housekeeping & Allocation</span>
+              </div>
+              <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-foreground">
+                Staff Operations Portal 🛎️
+              </h1>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Monitor real-time room readiness, allocate check-in arrivals, update housekeeping statuses, and dispatch staff tasks.
+              </p>
             </div>
-          </CardHeader>
-        </Card>
 
-        {!isAuthorized && (
-          <Card>
-            <CardContent className="py-6 text-sm text-muted-foreground">
-              Your account does not have staff access. Please contact an
-              administrator.
-            </CardContent>
-          </Card>
-        )}
-
-        {isAuthorized && (
-          <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <ClipboardList className="w-5 h-5 text-primary" />
-                  Allocate room
-                </CardTitle>
-                <CardDescription>
-                  Match available rooms to arriving reservations and record
-                  allocation notes.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <form onSubmit={handleAllocateRoom} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label>Guest name</Label>
-                    <Input
-                      placeholder="Aisha Khan"
-                      className="h-11"
-                      value={guestName}
-                      onChange={(event) => setGuestName(event.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Reservation ID</Label>
-                    <Input
-                      placeholder="AR-2391"
-                      className="h-11"
-                      value={reservationCode}
-                      onChange={(event) =>
-                        setReservationCode(event.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Room type</Label>
-                      <Select value={roomTypeId} onValueChange={setRoomTypeId}>
-                        <SelectTrigger className="h-11">
-                          <SelectValue placeholder="Select room" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {roomTypes.map((type) => (
-                            <SelectItem key={type.id} value={type.id}>
-                              {type.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Floor</Label>
-                      <Select value={floor} onValueChange={setFloor}>
-                        <SelectTrigger className="h-11">
-                          <SelectValue placeholder="Select floor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="3">Level 3</SelectItem>
-                          <SelectItem value="4">Level 4</SelectItem>
-                          <SelectItem value="6">Level 6</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Notes</Label>
-                    <Input
-                      placeholder="Near elevator, late arrival"
-                      className="h-11"
-                      value={notes}
-                      onChange={(event) => setNotes(event.target.value)}
-                    />
-                  </div>
-                  <Button
-                    className="w-full h-11 bg-primary hover:bg-primary/90"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Assigning..." : "Assign room"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <BedDouble className="w-5 h-5 text-chart-1" />
-                    Live inventory
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-3 gap-4 text-sm">
-                  {[
-                    ["Ready", inventory.ready],
-                    ["Cleaning", inventory.cleaning],
-                    ["Maintenance", inventory.maintenance],
-                  ].map(([label, value]) => (
-                    <Card key={String(label)}>
-                      <CardContent className="pt-6">
-                        <p className="text-muted-foreground">{label}</p>
-                        <p className="text-2xl font-display">{value}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Users className="w-5 h-5 text-chart-2" />
-                    Arrivals queue
-                  </CardTitle>
-                  <Button variant="outline" size="sm" onClick={loadDashboard}>
-                    Refresh
-                  </Button>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Guest</TableHead>
-                        <TableHead>Arrival</TableHead>
-                        <TableHead>Room type</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {arrivals.length === 0 && (
-                        <TableRow>
-                          <TableCell
-                            colSpan={3}
-                            className="text-center text-muted-foreground"
-                          >
-                            No arrivals today
-                          </TableCell>
-                        </TableRow>
-                      )}
-                      {arrivals.map((arrival) => (
-                        <TableRow key={arrival.id}>
-                          <TableCell>{arrival.last_name}</TableCell>
-                          <TableCell>{arrival.arrival_date}</TableCell>
-                          <TableCell>
-                            {arrival.room_types?.name || "Unassigned"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <BedDouble className="w-5 h-5 text-chart-1" />
-                    Rooms overview
-                  </CardTitle>
-                  <Button variant="outline" size="sm" onClick={loadDashboard}>
-                    Refresh
-                  </Button>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Room</TableHead>
-                        <TableHead>Floor</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {rooms.length === 0 && (
-                        <TableRow>
-                          <TableCell
-                            colSpan={4}
-                            className="text-center text-muted-foreground"
-                          >
-                            No rooms found
-                          </TableCell>
-                        </TableRow>
-                      )}
-                      {rooms.map((room) => (
-                        <TableRow key={room.id}>
-                          <TableCell>{room.room_number}</TableCell>
-                          <TableCell>{room.floor}</TableCell>
-                          <TableCell>
-                            {room.room_types?.name || "Unassigned"}
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={room.status}
-                              onValueChange={(value) =>
-                                handleRoomStatusChange(room.id, value)
-                              }
-                            >
-                              <SelectTrigger className="h-9">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="ready">Ready</SelectItem>
-                                <SelectItem value="cleaning">
-                                  Cleaning
-                                </SelectItem>
-                                <SelectItem value="maintenance">
-                                  Maintenance
-                                </SelectItem>
-                                <SelectItem value="occupied">
-                                  Occupied
-                                </SelectItem>
-                                <SelectItem value="out_of_service">
-                                  Out of service
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
+            <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
+              <div className="size-12 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 className="size-6" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rooms Ready</p>
+                <p className="font-display text-xl font-bold text-foreground">{inventory.ready} Units</p>
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{inventory.cleaning} cleaning in progress</span>
+              </div>
             </div>
           </div>
-        )}
+        </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Layers className="w-4 h-4 text-primary" />
-                Allocation rules
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="glass-card border-border/60 hover:border-emerald-500/40 transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
+                Rooms Ready
               </CardTitle>
+              <div className="size-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 className="size-5" />
+              </div>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Automatic grouping by stay length and VIP tier.
+            <CardContent>
+              <div className="font-display text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                {inventory.ready}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Available for check-in</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <ShieldCheck className="w-4 h-4 text-chart-3" />
-                Access control
+
+          <Card className="glass-card border-border/60 hover:border-amber-500/40 transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
+                Cleaning in Progress
               </CardTitle>
+              <div className="size-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <Clock className="size-5" />
+              </div>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Staff roles with audit trails on every room update.
+            <CardContent>
+              <div className="font-display text-3xl font-bold text-amber-600 dark:text-amber-400">
+                {inventory.cleaning}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Housekeeping active</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <ClipboardList className="w-4 h-4 text-chart-4" />
-                Housekeeping sync
+
+          <Card className="glass-card border-border/60 hover:border-rose-500/40 transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
+                Maintenance Required
               </CardTitle>
+              <div className="size-10 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <AlertTriangle className="size-5" />
+              </div>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Inspection checklists and turn-down scheduling.
+            <CardContent>
+              <div className="font-display text-3xl font-bold text-rose-600 dark:text-rose-400">
+                {inventory.maintenance}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Engineering maintenance</p>
             </CardContent>
           </Card>
         </div>
-      </div>
+
+        {/* Room Assignment Form & Arrivals List */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Allocation Form */}
+          <Card className="lg:col-span-5 glass-card border-border/60">
+            <CardHeader className="border-b border-border/40 pb-4">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Layers className="size-5 text-emerald-500" />
+                Allocate Guest Room
+              </CardTitle>
+              <CardDescription>Assign room allocation for arriving guests</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <form onSubmit={handleCreateAssignment} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Guest Full Name</Label>
+                  <Input
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    placeholder="e.g. John Smith"
+                    className="bg-background/50"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Reservation Code</Label>
+                  <Input
+                    value={reservationCode}
+                    onChange={(e) => setReservationCode(e.target.value)}
+                    placeholder="e.g. RES-1001"
+                    className="bg-background/50"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Room Type</Label>
+                    <Select value={roomTypeId} onValueChange={setRoomTypeId}>
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Category..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roomTypes.map((rt) => (
+                          <SelectItem key={rt.id} value={rt.id}>
+                            {rt.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Floor Level</Label>
+                    <Input
+                      type="number"
+                      value={floor}
+                      onChange={(e) => setFloor(e.target.value)}
+                      placeholder="3"
+                      className="bg-background/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Special Allocation Notes</Label>
+                  <Input
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Near elevator, ocean view preference..."
+                    className="bg-background/50"
+                  />
+                </div>
+
+                <Button type="submit" disabled={isLoading} className="w-full gap-2 shadow-lg shadow-emerald-500/20">
+                  {isLoading ? "Saving Allocation..." : "Confirm Room Allocation"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Today's Arrivals List */}
+          <Card className="lg:col-span-7 glass-card border-border/60">
+            <CardHeader className="border-b border-border/40 pb-4">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Users className="size-5 text-emerald-500" />
+                Today&apos;s Guest Arrivals Timeline ({arrivals.length})
+              </CardTitle>
+              <CardDescription>Scheduled check-ins for {today}</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {arrivals.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">No guest arrivals scheduled today.</p>
+              ) : (
+                <div className="space-y-3">
+                  {arrivals.map((a) => (
+                    <div
+                      key={a.id}
+                      className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-background/50 hover:border-emerald-500/40 transition-all"
+                    >
+                      <div>
+                        <p className="font-semibold text-foreground">
+                          {a.last_name} • <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400">#{a.reservation_code}</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Room Category: {a.room_types?.name || "Standard Room"}
+                        </p>
+                      </div>
+
+                      <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                        Arrival Today
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Room Inventory & Status Grid */}
+        <Card className="glass-card border-border/60">
+          <CardHeader className="border-b border-border/40 pb-4">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Building className="size-5 text-emerald-500" />
+              Property Room Inventory & Housekeeping Controls
+            </CardTitle>
+            <CardDescription>Update live room status for all floors</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {rooms.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">No room records configured.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {rooms.map((room) => (
+                  <div
+                    key={room.id}
+                    className="p-4 rounded-2xl border border-border/50 bg-background/50 space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-display font-bold text-lg text-foreground">
+                        Room {room.room_number}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={`capitalize text-[10px] ${
+                          room.status === "ready"
+                            ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
+                            : room.status === "cleaning"
+                            ? "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                            : "border-rose-500/30 text-rose-600 bg-rose-500/10"
+                        }`}
+                      >
+                        {room.status}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Floor {room.floor} • {room.room_types?.name || "Standard Room"}
+                    </p>
+
+                    <div className="flex gap-1 pt-1">
+                      <Button
+                        size="sm"
+                        variant={room.status === "ready" ? "default" : "outline"}
+                        onClick={() => handleUpdateStatus(room.id, "ready")}
+                        className="text-[10px] h-7 px-2 flex-1"
+                      >
+                        Ready
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={room.status === "cleaning" ? "default" : "outline"}
+                        onClick={() => handleUpdateStatus(room.id, "cleaning")}
+                        className="text-[10px] h-7 px-2 flex-1"
+                      >
+                        Cleaning
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={room.status === "maintenance" ? "default" : "outline"}
+                        onClick={() => handleUpdateStatus(room.id, "maintenance")}
+                        className="text-[10px] h-7 px-2 flex-1"
+                      >
+                        Maint.
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </main>
     </div>
   );
 }

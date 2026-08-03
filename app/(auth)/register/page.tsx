@@ -6,17 +6,19 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  BriefcaseMedical,
-  FlaskConical,
-  Shield,
+  Activity,
   ArrowLeft,
+  Bed,
+  CheckCircle2,
   ConciergeBell,
+  FlaskConical,
+  Heart,
   Lock,
   Mail,
+  Pill,
+  Shield,
   Stethoscope,
   User,
-  Users,
-  UserCog,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SELF_SERVICE_ROLES } from "@/lib/auth/roles";
@@ -40,16 +42,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const roles = [
-  { value: "patient", label: "Patient", icon: Users },
-  { value: "doctor", label: "Doctor", icon: Stethoscope },
-  { value: "admin", label: "Admin", icon: Shield },
-  { value: "guest", label: "Guest", icon: ConciergeBell },
-  { value: "staff", label: "Staff", icon: UserCog },
-  { value: "lab", label: "Lab", icon: FlaskConical },
-  { value: "pharma", label: "Pharma", icon: BriefcaseMedical },
+  { value: "patient", label: "Patient", icon: Heart, badge: "Healthcare" },
+  { value: "doctor", label: "Doctor", icon: Stethoscope, badge: "Clinical" },
+  { value: "admin", label: "Admin", icon: Shield, badge: "Management" },
+  { value: "lab", label: "Lab Tech", icon: FlaskConical, badge: "Diagnostics" },
+  { value: "pharma", label: "Pharmacist", icon: Pill, badge: "Dispensary" },
+  { value: "guest", label: "Guest", icon: ConciergeBell, badge: "Hospitality" },
+  { value: "staff", label: "Staff", icon: Bed, badge: "Operations" },
 ] as const;
 
 export default function RegisterPage() {
@@ -111,9 +112,7 @@ export default function RegisterPage() {
         return;
       }
 
-      toast.success(
-        "Registration successful! Please check your email to verify your account.",
-      );
+      toast.success("Account created successfully! Please sign in.");
       router.push("/login");
     } catch (error) {
       console.error("Registration error:", error);
@@ -126,64 +125,73 @@ export default function RegisterPage() {
   const selectedRole = form.watch("role");
 
   return (
-    <div className="min-h-screen px-4 py-8">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6">
-        <Button asChild variant="ghost" className="w-fit px-0">
+    <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      {/* Background ambient light */}
+      <div className="absolute top-10 right-10 size-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 left-10 size-80 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none" />
+
+      <div className="relative w-full max-w-4xl space-y-6">
+        <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
           <Link href="/">
             <ArrowLeft className="size-4" />
-            Back to home
+            Back to Home
           </Link>
         </Button>
 
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-          <Card>
-            <CardHeader className="gap-4">
-              <Badge variant="secondary" className="w-fit">
-                Role-based access
-              </Badge>
-              <div className="space-y-3">
-                <CardTitle className="font-display text-4xl">
-                  Create account
-                </CardTitle>
-                <CardDescription className="text-base">
-                  Register once and route into the correct workspace based on
-                  your role.
-                </CardDescription>
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-stretch">
+          {/* Left Info Card */}
+          <Card className="lg:col-span-5 glass-panel border-primary/20 flex flex-col justify-between p-6">
+            <div className="space-y-4">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+                <Activity className="size-6" />
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>Choose the role that matches your access needs.</p>
-              <p>
-                You will be routed to the matching workspace after verification.
+              <Badge variant="outline" className="text-xs font-semibold text-primary border-primary/30">
+                Self-Service Onboarding
+              </Badge>
+              <h2 className="font-display text-2xl font-bold tracking-tight">
+                Create Your Workspace Role Account
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Registering creates a dedicated user profile mapped directly to your operational workspace role.
               </p>
-            </CardContent>
+            </div>
+
+            <div className="space-y-2 pt-6 border-t border-border/40 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-3.5 text-primary" />
+                <span>Instant routing after login</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-3.5 text-primary" />
+                <span>Encrypted Supabase Authentication</span>
+              </div>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Account details</CardTitle>
+          {/* Right Form Card */}
+          <Card className="lg:col-span-7 glass-card border-border/60 shadow-2xl p-6 sm:p-8">
+            <CardHeader className="px-0 pt-0 pb-4">
+              <CardTitle className="font-display text-2xl font-bold">Register Account</CardTitle>
               <CardDescription>
-                Create credentials and choose the role for this account.
+                Select your account role and enter your registration details.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0 pb-0">
               <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-5"
-                >
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField
                     control={form.control}
                     name="full_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <User className="size-4 text-primary" />
-                          Full name
+                        <FormLabel className="flex items-center gap-2 text-xs font-semibold">
+                          <User className="size-3.5 text-primary" />
+                          Full Name
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Jane Doe"
+                            placeholder="Dr. Sarah Connor"
+                            className="bg-background/50"
                             {...field}
                             disabled={isLoading}
                           />
@@ -198,14 +206,15 @@ export default function RegisterPage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Mail className="size-4 text-primary" />
-                          Email
+                        <FormLabel className="flex items-center gap-2 text-xs font-semibold">
+                          <Mail className="size-3.5 text-primary" />
+                          Email Address
                         </FormLabel>
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="name@example.com"
+                            placeholder="sarah@aurum.com"
+                            className="bg-background/50"
                             {...field}
                             disabled={isLoading}
                           />
@@ -220,14 +229,15 @@ export default function RegisterPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Lock className="size-4 text-primary" />
+                        <FormLabel className="flex items-center gap-2 text-xs font-semibold">
+                          <Lock className="size-3.5 text-primary" />
                           Password
                         </FormLabel>
                         <FormControl>
                           <Input
                             type="password"
                             placeholder="••••••••"
+                            className="bg-background/50"
                             {...field}
                             disabled={isLoading}
                           />
@@ -237,55 +247,60 @@ export default function RegisterPage() {
                     )}
                   />
 
+                  {/* Role Selector Grid */}
                   <FormField
                     control={form.control}
                     name="role"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Select role</FormLabel>
-                        <Tabs
-                          value={selectedRole}
-                          onValueChange={field.onChange}
-                          className="w-full"
-                        >
-                          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 lg:grid-cols-4">
-                            {roles.map((role) => {
-                              const Icon = role.icon;
-
-                              return (
-                                <TabsTrigger
-                                  key={role.value}
-                                  value={role.value}
-                                  className="h-auto justify-start gap-2 rounded-md border px-3 py-2 text-left"
-                                  disabled={isLoading}
-                                >
-                                  <Icon className="size-4" />
-                                  {role.label}
-                                </TabsTrigger>
-                              );
-                            })}
-                          </TabsList>
-                        </Tabs>
+                      <FormItem className="space-y-2">
+                        <FormLabel className="text-xs font-semibold">Select Account Role</FormLabel>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {roles.map((r) => {
+                            const RIcon = r.icon;
+                            const isSelected = selectedRole === r.value;
+                            return (
+                              <button
+                                key={r.value}
+                                type="button"
+                                onClick={() => field.onChange(r.value)}
+                                disabled={isLoading}
+                                className={`flex items-center gap-2 rounded-xl border p-2.5 text-left transition-all ${
+                                  isSelected
+                                    ? "border-primary bg-primary/10 font-semibold shadow-xs"
+                                    : "border-border/50 bg-background/40 hover:border-border hover:bg-accent/50 text-muted-foreground"
+                                }`}
+                              >
+                                <RIcon className={`size-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                                <div className="leading-none">
+                                  <p className="text-xs font-medium text-foreground">{r.label}</p>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Create account"}
+                  <Button type="submit" size="lg" className="w-full shadow-lg shadow-primary/20 gap-2 mt-4" disabled={isLoading}>
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <Activity className="size-4 animate-spin" /> Registering Account...
+                      </span>
+                    ) : (
+                      "Complete Registration"
+                    )}
                   </Button>
                 </form>
               </Form>
 
-              <p className="mt-6 text-sm text-muted-foreground">
+              <div className="mt-6 pt-4 border-t border-border/40 text-center text-xs text-muted-foreground">
                 Already have an account?{" "}
-                <Link
-                  href="/login"
-                  className="text-primary underline underline-offset-4"
-                >
-                  Sign in
+                <Link href="/login" className="font-semibold text-primary hover:underline">
+                  Sign in here
                 </Link>
-              </p>
+              </div>
             </CardContent>
           </Card>
         </div>

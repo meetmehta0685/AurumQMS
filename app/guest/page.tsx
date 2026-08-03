@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -31,11 +30,13 @@ import {
   CalendarCheck,
   ConciergeBell,
   MapPin,
-  ShieldCheck,
   Sparkles,
-  Star,
-  ArrowRight,
+  Search,
+  CheckCircle2,
+  Clock,
+  Bed,
 } from "lucide-react";
+import { RoleHeader } from "@/components/layout/RoleHeader";
 
 type RoomType = {
   id: string;
@@ -76,7 +77,6 @@ export default function GuestPortalPage() {
   const [preferenceNotes, setPreferenceNotes] = useState("");
   const [requestType, setRequestType] = useState("");
   const [requestDetails, setRequestDetails] = useState("");
-  const [profileRole, setProfileRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -86,12 +86,6 @@ export default function GuestPortalPage() {
         router.push("/login");
         return;
       }
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("user_id", data.user.id)
-        .maybeSingle();
-      setProfileRole(profile?.role || null);
     };
 
     const loadRoomTypes = async () => {
@@ -131,7 +125,7 @@ export default function GuestPortalPage() {
       let query = supabase
         .from("reservations")
         .select(
-          "id, reservation_code, arrival_date, departure_date, status, early_check_in, preference_notes, room_type_id, room_types(name)",
+          "id, reservation_code, arrival_date, departure_date, status, early_check_in, preference_notes, room_type_id, room_types(name)"
         )
         .eq("reservation_code", reservationCode.trim())
         .ilike("last_name", lastName.trim());
@@ -148,407 +142,297 @@ export default function GuestPortalPage() {
         return;
       }
 
-      const normalizedReservation: Reservation = {
-        ...data,
-        room_types: Array.isArray((data as any).room_types)
-          ? ((data as any).room_types[0] ?? null)
-          : (data as any).room_types,
+      const res: Reservation = {
+        id: data.id,
+        reservation_code: data.reservation_code,
+        arrival_date: data.arrival_date,
+        departure_date: data.departure_date,
+        status: data.status,
+        early_check_in: data.early_check_in,
+        preference_notes: data.preference_notes,
+        room_type_id: data.room_type_id,
+        room_types: Array.isArray(data.room_types)
+          ? data.room_types[0]
+          : data.room_types,
       };
 
-      setReservation(normalizedReservation);
-      setRoomTypeId(data.room_type_id || "");
-      setEarlyCheckIn(Boolean(data.early_check_in));
-      setPreferenceNotes(data.preference_notes || "");
-      await loadServiceRequests(data.id);
-      toast.success("Reservation loaded");
-    } catch {
-      toast.error("Unable to load reservation");
+      setReservation(res);
+      setRoomTypeId(res.room_type_id || "");
+      setEarlyCheckIn(res.early_check_in);
+      setPreferenceNotes(res.preference_notes || "");
+      toast.success("Reservation details loaded");
+      await loadServiceRequests(res.id);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Lookup failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleUpdatePreferences = async () => {
+  const handleUpdatePreferences = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!reservation) return;
-    setIsLoading(true);
-    const { error } = await supabase
-      .from("reservations")
-      .update({
-        early_check_in: earlyCheckIn,
-        preference_notes: preferenceNotes.trim() || null,
-        room_type_id: roomTypeId || null,
-      })
-      .eq("id", reservation.id);
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Preferences updated");
+    try {
+      const { error } = await supabase
+        .from("reservations")
+        .update({
+          room_type_id: roomTypeId || null,
+          early_check_in: earlyCheckIn,
+          preference_notes: preferenceNotes || null,
+        })
+        .eq("id", reservation.id);
+
+      if (error) throw error;
+      toast.success("Stay preferences updated");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to update preferences");
     }
-    setIsLoading(false);
   };
 
-  const handleCreateServiceRequest = async () => {
-    if (!reservation) return;
-    if (!requestType) {
-      toast.error("Select a request type");
+  const handleCreateRequest = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!reservation || !requestType) {
+      toast.error("Select a service request type");
       return;
     }
-    setIsLoading(true);
-    const { error } = await supabase.from("service_requests").insert({
-      reservation_id: reservation.id,
-      request_type: requestType,
-      details: requestDetails.trim() || null,
-    });
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Request sent to concierge");
+    try {
+      const { error } = await supabase.from("service_requests").insert({
+        reservation_id: reservation.id,
+        request_type: requestType,
+        details: requestDetails || null,
+        status: "open",
+      });
+
+      if (error) throw error;
+      toast.success("Concierge request sent to property staff");
       setRequestType("");
       setRequestDetails("");
       await loadServiceRequests(reservation.id);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to submit request");
     }
-    setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen px-4 py-8 text-foreground">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <Button asChild variant="ghost" className="w-fit px-0">
-          <Link href="/">
-            <ArrowRight className="size-4 rotate-180" />
-            Back to home
-          </Link>
-        </Button>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+      {/* Unified Top Navigation */}
+      <RoleHeader currentRole="guest" />
 
-        <Card>
-          <CardHeader className="gap-4">
-            <Badge variant="secondary" className="w-fit">
-              <ConciergeBell className="size-3" />
-              Guest portal
-            </Badge>
-            <div className="space-y-3">
-              <CardTitle className="font-display text-4xl">
-                Welcome to your stay
-              </CardTitle>
-              <CardDescription className="max-w-2xl text-base">
-                Manage your reservation, room preferences, and services in one
-                place.
-              </CardDescription>
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+        {/* Luxury Hospitality Hero */}
+        <div className="relative overflow-hidden rounded-3xl border border-rose-500/30 glass-card p-6 sm:p-8 glow-rose">
+          <div className="absolute -top-16 -right-16 size-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="border-rose-500/40 text-rose-600 dark:text-rose-400 bg-rose-500/10 gap-1.5">
+                  <ConciergeBell className="size-3.5" />
+                  Luxury Guest Suite
+                </Badge>
+                <span className="text-xs text-muted-foreground">• Hospitality Concierge</span>
+              </div>
+              <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-foreground">
+                Welcome to Aurum Stay ✨
+              </h1>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Manage your stay preferences, check reservation status, request housekeeping amenities, and communicate with the concierge.
+              </p>
             </div>
+
+            <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
+              <div className="size-12 rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <Sparkles className="size-6" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Guest Services</p>
+                <p className="font-display text-lg font-bold text-foreground">24/7 Digital Concierge</p>
+                <span className="text-xs text-rose-600 dark:text-rose-400 font-medium">Ready at your service</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Reservation Lookup Section */}
+        <Card className="glass-card border-border/60">
+          <CardHeader className="border-b border-border/40 pb-4">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Search className="size-5 text-rose-500" />
+              Lookup Reservation
+            </CardTitle>
+            <CardDescription>Enter your reservation code and registered last name</CardDescription>
           </CardHeader>
+          <CardContent className="pt-6">
+            <form onSubmit={handleLookup} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Reservation Code</Label>
+                <Input
+                  value={reservationCode}
+                  onChange={(e) => setReservationCode(e.target.value)}
+                  placeholder="e.g. RES-1001"
+                  className="bg-background/50"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Guest Last Name</Label>
+                <Input
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="e.g. Smith"
+                  className="bg-background/50"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Arrival Date (Optional)</Label>
+                <Input
+                  type="date"
+                  value={arrivalDate}
+                  onChange={(e) => setArrivalDate(e.target.value)}
+                  className="bg-background/50"
+                />
+              </div>
+              <Button type="submit" disabled={isLoading} className="sm:col-span-3 gap-2 shadow-lg shadow-rose-500/20">
+                {isLoading ? "Searching Reservation..." : "Lookup Reservation File"}
+              </Button>
+            </form>
+          </CardContent>
         </Card>
 
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <CalendarCheck className="w-5 h-5 text-primary" />
-                Find your reservation
-              </CardTitle>
-              <CardDescription>
-                Load your stay details, update preferences, and request
-                services.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <form onSubmit={handleLookup} className="space-y-5">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Reservation ID</Label>
-                    <Input
-                      placeholder="AR-2391"
-                      className="h-11"
-                      value={reservationCode}
-                      onChange={(event) =>
-                        setReservationCode(event.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Last Name</Label>
-                    <Input
-                      placeholder="Patel"
-                      className="h-11"
-                      value={lastName}
-                      onChange={(event) => setLastName(event.target.value)}
-                    />
-                  </div>
+        {/* Active Reservation Details & Service Request Cards */}
+        {reservation && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Stay Preferences Card */}
+            <Card className="glass-card border-border/60">
+              <CardHeader className="border-b border-border/40 pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <CalendarCheck className="size-5 text-rose-500" />
+                    Reservation #{reservation.reservation_code}
+                  </CardTitle>
+                  <Badge variant="outline" className="border-rose-500/30 text-rose-600 bg-rose-500/10 capitalize">
+                    {reservation.status}
+                  </Badge>
                 </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Arrival Date</Label>
-                    <Input
-                      type="date"
-                      className="h-11"
-                      value={arrivalDate}
-                      onChange={(event) => setArrivalDate(event.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Room Type</Label>
+                <CardDescription>
+                  Arrival: {reservation.arrival_date} • Departure: {reservation.departure_date}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                <form onSubmit={handleUpdatePreferences} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Preferred Room Category</Label>
                     <Select value={roomTypeId} onValueChange={setRoomTypeId}>
-                      <SelectTrigger className="h-11">
-                        <SelectValue placeholder="Select room" />
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select room type..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {roomTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.id}>
-                            {type.name}
+                        {roomTypes.map((rt) => (
+                          <SelectItem key={rt.id} value={rt.id}>
+                            {rt.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
 
-                <Card>
-                  <CardContent className="flex items-center justify-between gap-4 pt-6">
-                    <div>
-                      <p className="font-medium">Early check-in request</p>
-                      <p className="text-sm text-muted-foreground">
-                        We will confirm by noon on arrival day.
-                      </p>
+                  <div className="flex items-center justify-between rounded-xl border border-border/50 p-3 bg-background/40">
+                    <div className="space-y-0.5">
+                      <Label className="text-xs font-semibold">Request Early Check-in</Label>
+                      <p className="text-[11px] text-muted-foreground">Subject to housekeeping room readiness</p>
                     </div>
-                    <Switch
-                      checked={earlyCheckIn}
-                      onCheckedChange={setEarlyCheckIn}
+                    <Switch checked={earlyCheckIn} onCheckedChange={setEarlyCheckIn} />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Special Preferences / Pillow & Dietary Notes</Label>
+                    <Textarea
+                      value={preferenceNotes}
+                      onChange={(e) => setPreferenceNotes(e.target.value)}
+                      placeholder="Extra pillows, high floor room, feather-free bed..."
+                      className="bg-background/50 min-h-20"
                     />
-                  </CardContent>
-                </Card>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label>Concierge preferences</Label>
-                  <Textarea
-                    placeholder="Pillow softness, ambient music, dietary notes"
-                    value={preferenceNotes}
-                    onChange={(event) => setPreferenceNotes(event.target.value)}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button
-                    type="submit"
-                    className="w-full h-11 bg-primary hover:bg-primary/90"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Searching..." : "Load reservation"}
+                  <Button type="submit" className="w-full gap-2 shadow-lg shadow-rose-500/20">
+                    Save Stay Preferences
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-11"
-                    onClick={handleUpdatePreferences}
-                    disabled={!reservation || isLoading}
-                  >
-                    Save preferences
-                  </Button>
-                </div>
-              </form>
-
-              {reservation && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      Reservation summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Status</span>
-                      <Badge variant="outline" className="capitalize">
-                        {reservation.status.replace("_", " ")}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Stay</span>
-                      <span>
-                        {reservation.arrival_date} -{" "}
-                        {reservation.departure_date}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Room</span>
-                      <span>{reservation.room_types?.name || "Pending"}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="space-y-4">
-            {profileRole &&
-              profileRole !== "guest" &&
-              profileRole !== "patient" && (
-                <Card>
-                  <CardContent className="py-4 text-sm text-muted-foreground">
-                    This portal is for guests only. Please contact the front
-                    desk if you need access.
-                  </CardContent>
-                </Card>
-              )}
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Sparkles className="w-5 h-5 text-chart-1" />
-                  Today at AurumStay
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <div className="flex items-center justify-between">
-                  <span>Check-in opens</span>
-                  <span className="text-foreground">2:00 PM</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Evening tasting</span>
-                  <span className="text-foreground">6:30 PM</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>City terrace lounge</span>
-                  <span className="text-foreground">Open</span>
-                </div>
+                </form>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Bell className="w-5 h-5 text-chart-2" />
-                  Concierge notes
+            {/* Service Requests Panel */}
+            <Card className="glass-card border-border/60">
+              <CardHeader className="border-b border-border/40 pb-4">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Bell className="size-5 text-rose-500" />
+                  Concierge & Service Requests
                 </CardTitle>
+                <CardDescription>Request amenities or room service directly to staff</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <p>
-                  Share room ambience, pillow choice, or dietary preferences.
-                  Our team will prepare your suite.
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full h-10"
-                  onClick={handleUpdatePreferences}
-                  disabled={!reservation}
-                >
-                  Add preferences
-                </Button>
-              </CardContent>
-            </Card>
+              <CardContent className="pt-6 space-y-6">
+                <form onSubmit={handleCreateRequest} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Request Type</Label>
+                    <Select value={requestType} onValueChange={setRequestType}>
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select service..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Extra Towels">Extra Towels & Linens</SelectItem>
+                        <SelectItem value="Housekeeping">Housekeeping Refurbish</SelectItem>
+                        <SelectItem value="Luggage Assistance">Luggage Assistance</SelectItem>
+                        <SelectItem value="Room Service">In-Room Dining</SelectItem>
+                        <SelectItem value="Maintenance">Maintenance Check</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Bell className="w-5 h-5 text-chart-2" />
-                  Service requests
-                </CardTitle>
-                <CardDescription>
-                  Submit a request for dining, housekeeping, transport, or
-                  amenities.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Request type</Label>
-                  <Select value={requestType} onValueChange={setRequestType}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Choose a request" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="dining">Room dining</SelectItem>
-                      <SelectItem value="housekeeping">Housekeeping</SelectItem>
-                      <SelectItem value="transport">Transport</SelectItem>
-                      <SelectItem value="amenities">Amenities</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Details / Instructions</Label>
+                    <Textarea
+                      value={requestDetails}
+                      onChange={(e) => setRequestDetails(e.target.value)}
+                      placeholder="Specify timing or item details..."
+                      className="bg-background/50 min-h-16"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label>Details</Label>
-                  <Textarea
-                    placeholder="Add any details for the concierge team"
-                    value={requestDetails}
-                    onChange={(event) => setRequestDetails(event.target.value)}
-                  />
-                </div>
+                  <Button type="submit" className="w-full gap-2 shadow-lg shadow-rose-500/20">
+                    Dispatch Request to Staff
+                  </Button>
+                </form>
 
-                <Button
-                  className="w-full h-11"
-                  onClick={handleCreateServiceRequest}
-                  disabled={!reservation || isLoading}
-                >
-                  Send request
-                </Button>
-
-                <Separator />
-
-                <div className="space-y-2 text-sm">
-                  {serviceRequests.length === 0 && (
-                    <p className="text-muted-foreground">No requests yet.</p>
-                  )}
-                  {serviceRequests.map((request) => (
-                    <Card key={request.id}>
-                      <CardContent className="flex items-center justify-between gap-4 pt-6">
-                        <div>
-                          <p className="font-medium capitalize">
-                            {request.request_type}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {request.details || "No details"}
-                          </p>
+                {/* Submitted Requests List */}
+                <div className="space-y-2 pt-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Request History</p>
+                  {serviceRequests.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No active service requests.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {serviceRequests.map((sr) => (
+                        <div key={sr.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-background/50 text-xs">
+                          <div>
+                            <p className="font-semibold text-foreground">{sr.request_type}</p>
+                            {sr.details && <p className="text-muted-foreground">{sr.details}</p>}
+                          </div>
+                          <Badge variant="outline" className="capitalize border-rose-500/30 text-rose-600 bg-rose-500/10">
+                            {sr.status}
+                          </Badge>
                         </div>
-                        <Badge variant="outline" className="uppercase">
-                          {request.status}
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  ))}
+                      ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <ShieldCheck className="w-4 h-4 text-primary" />
-                Secure access
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Verified reservations and privacy-first check-in details.
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Star className="w-4 h-4 text-chart-3" />
-                Tailored stay
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Room fragrance, ambient music, and welcome drink preferences.
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <MapPin className="w-4 h-4 text-chart-4" />
-                Local experiences
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Curated city guides and on-demand reservations.
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        )}
+      </main>
     </div>
   );
 }

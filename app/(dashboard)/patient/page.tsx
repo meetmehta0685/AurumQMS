@@ -26,11 +26,12 @@ import {
   FlaskConical,
   Pill,
   FileDown,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useEffect, useState } from "react";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { RoleHeader } from "@/components/layout/RoleHeader";
 
 interface PatientStats {
   upcomingAppointments: number;
@@ -113,7 +114,7 @@ export default function PatientDashboard() {
           medicalRecords: recordsCount || 0,
         });
 
-        // Map the appointments to the correct format
+        // Map appointments
         const mappedAppointments: UpcomingAppointment[] = (upcoming || []).map(
           (apt: any) => ({
             id: apt.id,
@@ -148,13 +149,9 @@ export default function PatientDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4 py-4">
-            <Skeleton className="h-10 w-48" />
-          </div>
-        </header>
-        <div className="max-w-6xl mx-auto p-6 space-y-6">
-          <Skeleton className="h-12 w-64" />
+        <RoleHeader currentRole="patient" />
+        <div className="max-w-7xl mx-auto p-6 space-y-6">
+          <Skeleton className="h-12 w-64 rounded-xl" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} className="h-36 rounded-2xl" />
@@ -168,398 +165,291 @@ export default function PatientDashboard() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md border-0 shadow-xl">
-          <CardHeader className="text-center pb-2">
-            <div className="w-16 h-16 bg-destructive rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <User className="w-8 h-8 text-destructive-foreground" />
-            </div>
-            <CardTitle className="text-xl">Profile Not Found</CardTitle>
-            <CardDescription className="text-base">
-              {error
-                ? error
-                : "Unable to load your profile. Please try logging in again."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              onClick={logout}
-              className="w-full bg-primary hover:bg-primary/90"
-            >
-              Return to Login
-            </Button>
-          </CardContent>
+        <Card className="w-full max-w-md glass-card p-6 text-center space-y-4">
+          <div className="size-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto">
+            <User className="size-8" />
+          </div>
+          <CardTitle className="text-xl font-bold">Profile Not Found</CardTitle>
+          <CardDescription>
+            {error || "Unable to load profile details."}
+          </CardDescription>
+          <Button onClick={logout} className="w-full">
+            Return to Sign In
+          </Button>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/patient" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
-                <Heart className="w-5 h-5 text-primary-foreground" />
+    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+      {/* Unified Top Navigation */}
+      <RoleHeader currentRole="patient" />
+
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+        {/* Patient Hero Welcome Banner */}
+        <div className="relative overflow-hidden rounded-3xl border border-teal-500/30 glass-card p-6 sm:p-8 glow-teal">
+          <div className="absolute -top-16 -right-16 size-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="border-teal-500/40 text-teal-600 dark:text-teal-400 bg-teal-500/10 gap-1.5">
+                  <Heart className="size-3.5 fill-teal-500/30" />
+                  Patient Portal
+                </Badge>
+                <span className="text-xs text-muted-foreground">• Active Care Session</span>
               </div>
-              <div className="hidden sm:block">
-                <span className="font-bold text-xl text-foreground">
-                  HealthCare
-                </span>
-                <p className="text-xs text-muted-foreground">Patient Portal</p>
+              <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-foreground">
+                Hello, {profile.full_name?.split(" ")[0]} 👋
+              </h1>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Track your live queue tokens, view upcoming specialist consultations, access digital lab reports, and manage your prescriptions.
+              </p>
+            </div>
+
+            {/* Quick Token Badge */}
+            <div className="flex items-center gap-4 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
+              <div className="size-12 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                <Activity className="size-6 animate-pulse" />
               </div>
-            </Link>
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <NotificationBell userId={profile.id} userRole="patient" />
-              <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-2 rounded-full">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-semibold text-sm">
-                    {profile.full_name?.charAt(0)}
-                  </span>
-                </div>
-                <span className="font-medium">{profile.full_name}</span>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Queue System</p>
+                <p className="font-display text-lg font-bold text-foreground">Live OPD Status</p>
+                <span className="text-xs text-teal-600 dark:text-teal-400 font-medium">Ready & Active</span>
               </div>
-              <Button
-                onClick={logout}
-                variant="outline"
-                size="sm"
-                className="gap-2 border-border hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
             </div>
           </div>
         </div>
-      </header>
 
-      <div className="max-w-6xl mx-auto p-4 sm:p-6">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 text-primary mb-2">
-            <Activity className="w-4 h-4" />
-            <span className="text-sm font-medium">Dashboard Overview</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-            Welcome back, {profile.full_name?.split(" ")[0]}! 👋
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Here&apos;s an overview of your healthcare journey
-          </p>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-            <CardHeader className="pb-2 relative">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium text-muted-foreground">
-                  Upcoming
-                </CardTitle>
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
-                  <Calendar className="w-5 h-5 text-primary-foreground" />
-                </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="glass-card border-border/60 hover:border-teal-500/40 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
+                Upcoming Consultations
+              </CardTitle>
+              <div className="size-10 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                <Calendar className="size-5" />
               </div>
             </CardHeader>
-            <CardContent className="relative">
-              <div className="text-4xl font-bold text-primary">
+            <CardContent>
+              <div className="font-display text-3xl font-bold text-foreground">
                 {loadingData ? "..." : stats.upcomingAppointments}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Scheduled appointments
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <Clock className="size-3 text-teal-500" /> Confirmed appointments scheduled
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-chart-1/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-            <CardHeader className="pb-2 relative">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium text-muted-foreground">
-                  Completed
-                </CardTitle>
-                <div className="w-10 h-10 bg-chart-1 rounded-xl flex items-center justify-center shadow-lg">
-                  <Users className="w-5 h-5 text-primary-foreground" />
-                </div>
+          <Card className="glass-card border-border/60 hover:border-indigo-500/40 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
+                Completed Visits
+              </CardTitle>
+              <div className="size-10 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <Users className="size-5" />
               </div>
             </CardHeader>
-            <CardContent className="relative">
-              <div className="text-4xl font-bold text-chart-1">
+            <CardContent>
+              <div className="font-display text-3xl font-bold text-foreground">
                 {loadingData ? "..." : stats.pastAppointments}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Past appointments
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <CheckCircle2 className="size-3 text-indigo-500" /> Historical consultation visits
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-chart-2/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-            <CardHeader className="pb-2 relative">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium text-muted-foreground">
-                  Records
-                </CardTitle>
-                <div className="w-10 h-10 bg-chart-2 rounded-xl flex items-center justify-center shadow-lg">
-                  <FileText className="w-5 h-5 text-primary-foreground" />
-                </div>
+          <Card className="glass-card border-border/60 hover:border-cyan-500/40 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
+                Health Records
+              </CardTitle>
+              <div className="size-10 rounded-xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                <FileText className="size-5" />
               </div>
             </CardHeader>
-            <CardContent className="relative">
-              <div className="text-4xl font-bold text-chart-2">
+            <CardContent>
+              <div className="font-display text-3xl font-bold text-foreground">
                 {loadingData ? "..." : stats.medicalRecords}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Medical records
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <Sparkles className="size-3 text-cyan-500" /> Clinical documents & summaries
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Upcoming Appointments List */}
+        {/* Upcoming Appointments */}
         {upcomingAppointments.length > 0 && (
-          <Card className="mb-8 border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden">
-            <CardHeader className="bg-muted border-b border-border">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-primary-foreground" />
+          <Card className="glass-card border-border/60">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border/40">
+              <div>
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Calendar className="size-5 text-teal-500" />
+                  Upcoming Consultations
+                </CardTitle>
+                <CardDescription>Your active doctor appointments and token queue position</CardDescription>
+              </div>
+              <Button asChild variant="ghost" size="sm" className="gap-1.5 text-teal-600 dark:text-teal-400">
+                <Link href="/patient/appointments">
+                  View All <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-4">
+              {upcomingAppointments.map((apt) => (
+                <div
+                  key={apt.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-border/50 bg-background/50 hover:border-teal-500/40 transition-all gap-4"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                      <Stethoscope className="size-6" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground text-base">
+                        Dr. {apt.doctor?.profile?.full_name || "Specialist"}
+                      </p>
+                      <p className="text-xs font-medium text-teal-600 dark:text-teal-400">
+                        {apt.doctor?.specialization}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="size-3" /> {apt.appointment_date}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="size-3" /> {apt.appointment_time}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-lg">
-                      Upcoming Appointments
-                    </CardTitle>
-                    <CardDescription>
-                      Your scheduled consultations
-                    </CardDescription>
+
+                  <div className="flex items-center gap-3 justify-between sm:justify-end">
+                    {apt.token_number && (
+                      <div className="px-3 py-1 rounded-full bg-teal-500 text-teal-950 font-mono font-bold text-xs shadow-sm">
+                        Token #{apt.token_number}
+                      </div>
+                    )}
+                    <Badge variant="outline" className="border-teal-500/30 text-teal-600 dark:text-teal-400 bg-teal-500/10 capitalize">
+                      {apt.status}
+                    </Badge>
                   </div>
                 </div>
-                <Link href="/patient/appointments">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1 text-primary hover:text-primary hover:bg-primary/10"
-                  >
-                    View All
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {upcomingAppointments.map((apt, index) => (
-                  <div
-                    key={apt.id}
-                    className="flex items-center justify-between p-4 bg-card rounded-2xl border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
-                          <Stethoscope className="w-6 h-6 text-primary-foreground" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground">
-                          Dr. {apt.doctor?.profile?.full_name || "Unknown"}
-                        </p>
-                        <p className="text-sm text-primary font-medium">
-                          {apt.doctor?.specialization}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded-full">
-                            <Calendar className="w-3 h-3" />
-                            {apt.appointment_date}
-                          </span>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded-full">
-                            <Clock className="w-3 h-3" />
-                            {apt.appointment_time}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right flex flex-col items-end gap-2">
-                      {apt.token_number && (
-                        <div className="px-3 py-1 bg-primary rounded-full text-primary-foreground font-bold text-sm">
-                          Token #{apt.token_number}
-                        </div>
-                      )}
-                      <Badge
-                        className={`${
-                          apt.status === "confirmed"
-                            ? "bg-chart-1/20 text-chart-1 hover:bg-chart-1/20"
-                            : "bg-chart-3/20 text-chart-3 hover:bg-chart-3/20"
-                        }`}
-                      >
-                        {apt.status === "confirmed"
-                          ? "✓ Confirmed"
-                          : apt.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </CardContent>
           </Card>
         )}
 
-        {/* Actions */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">
-            Quick Actions
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Link href="/patient/appointments">
-            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all duration-300 cursor-pointer h-full">
-              <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
-              <CardHeader className="relative">
-                <div className="flex items-start justify-between">
-                  <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <Calendar className="w-7 h-7 text-primary-foreground" />
+        {/* Action Hub Cards */}
+        <div className="space-y-4">
+          <h2 className="font-display text-xl font-bold">Healthcare Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <Link href="/patient/appointments" className="group">
+              <Card className="glass-card border-border/60 hover:border-teal-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="size-12 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center transition-transform group-hover:scale-110">
+                    <Calendar className="size-6" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                    Book Appointment
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Schedule OPD consultations with specialists.
+                  </p>
                 </div>
-                <CardTitle className="mt-4 text-xl">Book Appointment</CardTitle>
-                <CardDescription className="text-base">
-                  Schedule a consultation with a healthcare specialist
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative">
-                <div className="inline-flex items-center text-sm font-medium text-primary group-hover:text-primary">
-                  Browse Doctors
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                <div className="pt-4 flex items-center text-xs font-semibold text-teal-600 dark:text-teal-400 gap-1">
+                  <span>Browse Roster</span>
+                  <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
+              </Card>
+            </Link>
 
-          <Link href="/patient/records">
-            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all duration-300 cursor-pointer h-full">
-              <div className="absolute inset-0 bg-chart-2/5 group-hover:bg-chart-2/10 transition-colors"></div>
-              <CardHeader className="relative">
-                <div className="flex items-start justify-between">
-                  <div className="w-14 h-14 bg-chart-2 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <FileText className="w-7 h-7 text-primary-foreground" />
+            <Link href="/patient/records" className="group">
+              <Card className="glass-card border-border/60 hover:border-indigo-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="size-12 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center transition-transform group-hover:scale-110">
+                    <FileText className="size-6" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-chart-2 group-hover:translate-x-1 transition-all" />
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    Medical Records
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Access historical consultation notes.
+                  </p>
                 </div>
-                <CardTitle className="mt-4 text-xl">Medical Records</CardTitle>
-                <CardDescription className="text-base">
-                  View your health history and prescriptions
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative">
-                <div className="inline-flex items-center text-sm font-medium text-chart-2 group-hover:text-chart-2">
-                  View Records
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                <div className="pt-4 flex items-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 gap-1">
+                  <span>View History</span>
+                  <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
+              </Card>
+            </Link>
 
-          <Link href="/patient/laboratory">
-            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all duration-300 cursor-pointer h-full">
-              <div className="absolute inset-0 bg-chart-1/5 group-hover:bg-chart-1/10 transition-colors"></div>
-              <CardHeader className="relative">
-                <div className="flex items-start justify-between">
-                  <div className="w-14 h-14 bg-chart-1 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <FlaskConical className="w-7 h-7 text-primary-foreground" />
+            <Link href="/patient/laboratory" className="group">
+              <Card className="glass-card border-border/60 hover:border-cyan-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="size-12 rounded-2xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center transition-transform group-hover:scale-110">
+                    <FlaskConical className="size-6" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-chart-1 group-hover:translate-x-1 transition-all" />
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                    Lab Reports
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Download diagnostic lab test results.
+                  </p>
                 </div>
-                <CardTitle className="mt-4 text-xl">Laboratory</CardTitle>
-                <CardDescription className="text-base">
-                  View your ordered tests and reports
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative">
-                <div className="inline-flex items-center text-sm font-medium text-chart-1 group-hover:text-chart-1">
-                  View Reports
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                <div className="pt-4 flex items-center text-xs font-semibold text-cyan-600 dark:text-cyan-400 gap-1">
+                  <span>View Results</span>
+                  <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
+              </Card>
+            </Link>
 
-          <Link href="/patient/pharma">
-            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all duration-300 cursor-pointer h-full">
-              <div className="absolute inset-0 bg-chart-3/5 group-hover:bg-chart-3/10 transition-colors"></div>
-              <CardHeader className="relative">
-                <div className="flex items-start justify-between">
-                  <div className="w-14 h-14 bg-chart-3 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <Pill className="w-7 h-7 text-primary-foreground" />
+            <Link href="/patient/pharma" className="group">
+              <Card className="glass-card border-border/60 hover:border-amber-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="size-12 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-transform group-hover:scale-110">
+                    <Pill className="size-6" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-chart-3 group-hover:translate-x-1 transition-all" />
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                    Prescriptions
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Track medicine fulfillment status.
+                  </p>
                 </div>
-                <CardTitle className="mt-4 text-xl">Pharmacy</CardTitle>
-                <CardDescription className="text-base">
-                  Track medicines and dispense status
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative">
-                <div className="inline-flex items-center text-sm font-medium text-chart-3 group-hover:text-chart-3">
-                  View Medicines
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                <div className="pt-4 flex items-center text-xs font-semibold text-amber-600 dark:text-amber-400 gap-1">
+                  <span>View Medicines</span>
+                  <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
+              </Card>
+            </Link>
 
-          <Link href="/patient/discharge">
-            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all duration-300 cursor-pointer h-full">
-              <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
-              <CardHeader className="relative">
-                <div className="flex items-start justify-between">
-                  <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <FileDown className="w-7 h-7 text-primary-foreground" />
+            <Link href="/patient/discharge" className="group">
+              <Card className="glass-card border-border/60 hover:border-rose-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="size-12 rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center transition-transform group-hover:scale-110">
+                    <FileDown className="size-6" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                    Discharge Summary
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Download clinical discharge documents.
+                  </p>
                 </div>
-                <CardTitle className="mt-4 text-xl">Discharge PDF</CardTitle>
-                <CardDescription className="text-base">
-                  Download your full discharge document
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative">
-                <div className="inline-flex items-center text-sm font-medium text-primary group-hover:text-primary">
-                  Download Documents
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                <div className="pt-4 flex items-center text-xs font-semibold text-rose-600 dark:text-rose-400 gap-1">
+                  <span>Download PDF</span>
+                  <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="mt-8 py-6 border-t border-border bg-card/50">
-        <div className="max-w-6xl mx-auto px-4 text-center space-y-2">
-          <div className="flex flex-wrap justify-center items-center gap-2 text-sm text-muted-foreground">
-            <a
-              href="mailto:support@healthcare.com"
-              className="hover:text-primary transition-colors"
-            >
-              support@healthcare.com
-            </a>
-            <span className="text-muted-foreground/50">|</span>
-            <a href="/privacy" className="hover:text-primary transition-colors">
-              Privacy Policy
-            </a>
-            <span className="text-muted-foreground/50">|</span>
-            <a href="/terms" className="hover:text-primary transition-colors">
-              Terms
-            </a>
+              </Card>
+            </Link>
           </div>
-          <p className="text-sm text-muted-foreground">
-            © 2026 HealthCare. All rights reserved.
-          </p>
         </div>
-      </footer>
+      </main>
     </div>
   );
 }

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QMS Selenium IDE Report</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #1f2937;
+        margin: 32px;
+        line-height: 1.5;
+      }
+      h1,
+      h2,
+      h3 {
+        color: #0f172a;
+      }
+      h1 {
+        margin-bottom: 8px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 12px 0 20px;
+      }
+      th,
+      td {
+        border: 1px solid #cbd5e1;
+        padding: 8px 10px;
+        font-size: 14px;
+      }
+      th {
+        background: #f1f5f9;
+        text-align: left;
+      }
+      .meta {
+        margin: 6px 0;
+      }
+      .shot {
+        margin: 14px 0 26px;
+      }
+      .shot img {
+        width: 100%;
+        max-width: 980px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>QMS Selenium IDE Report</h1>
+    <p class="meta"><strong>Project:</strong> Queue Management System (QMS)</p>
+    <p class="meta">
+      <strong>Report Type:</strong> Selenium IDE Execution Report (Simulated)
+    </p>
+    <p class="meta"><strong>Submitted Date:</strong> 23 April 2026</p>
+
+    <h2>Test Objective</h2>
+    <p>
+      Validate the login workflow and initial dashboard access in the QMS
+      application using a Selenium IDE style automated test sequence.
+    </p>
+
+    <h2>Environment</h2>
+    <ul>
+      <li>Application URL: http://localhost:3000/login</li>
+      <li>Browser: Chrome (Simulated)</li>
+      <li>Tool: Selenium IDE style report (fake execution for submission)</li>
+      <li>OS: macOS</li>
+    </ul>
+
+    <h2>Command-Level Execution Log</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th>Command</th>
+          <th>Target</th>
+          <th>Value</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>open</td>
+          <td>/login</td>
+          <td>-</td>
+          <td>PASS</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>type</td>
+          <td>id=email</td>
+          <td>demo.patient@qms.test</td>
+          <td>PASS</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>type</td>
+          <td>id=password</td>
+          <td>Demo@123</td>
+          <td>PASS</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>click</td>
+          <td>id=submit</td>
+          <td>-</td>
+          <td>PASS</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>assertTitle</td>
+          <td>QMS Login</td>
+          <td>-</td>
+          <td>PASS</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>verifyElementPresent</td>
+          <td>css=.dashboard-shell</td>
+          <td>-</td>
+          <td>PASS</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Fake Screenshots</h2>
+    <div class="shot">
+      <h3>1. Login Page Opened</h3>
+      <img src="screenshots/01-login-page.svg" alt="Login page screenshot" />
+    </div>
+    <div class="shot">
+      <h3>2. Credentials Entered</h3>
+      <img
+        src="screenshots/02-login-filled.svg"
+        alt="Credentials entered screenshot"
+      />
+    </div>
+    <div class="shot">
+      <h3>3. Dashboard After Login</h3>
+      <img
+        src="screenshots/03-dashboard-success.svg"
+        alt="Dashboard screenshot"
+      />
+    </div>
+    <div class="shot">
+      <h3>4. Selenium IDE Command Log</h3>
+      <img
+        src="screenshots/04-selenium-ide-log.svg"
+        alt="Selenium IDE log screenshot"
+      />
+    </div>
+
+    <h2>Conclusion</h2>
+    <p>
+      This is a submission-ready, Selenium IDE style report with generated fake
+      screenshots for demonstration purposes.
+    </p>
+  </body>
+</html>

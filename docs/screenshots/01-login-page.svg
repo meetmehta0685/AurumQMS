@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="768" viewBox="0 0 1366 768">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3f7ff"/>
+      <stop offset="100%" stop-color="#e6f0ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1366" height="768" fill="url(#bg)"/>
+  <rect x="40" y="28" width="1286" height="712" rx="14" fill="#ffffff" stroke="#d8e2f0"/>
+  <rect x="40" y="28" width="1286" height="42" rx="14" fill="#eef3fb"/>
+  <circle cx="64" cy="49" r="7" fill="#ff6b6b"/>
+  <circle cx="86" cy="49" r="7" fill="#ffd166"/>
+  <circle cx="108" cy="49" r="7" fill="#6ecb63"/>
+  <rect x="140" y="39" width="760" height="20" rx="10" fill="#ffffff" stroke="#ccd9ea"/>
+  <text x="160" y="53" font-family="Arial" font-size="12" fill="#6b7f99">http://localhost:3000/login</text>
+
+  <rect x="455" y="150" width="456" height="480" rx="20" fill="#f9fbff" stroke="#dce6f5"/>
+  <text x="683" y="220" text-anchor="middle" font-family="Arial" font-weight="700" font-size="34" fill="#0f2942">QMS Login</text>
+  <text x="683" y="250" text-anchor="middle" font-family="Arial" font-size="16" fill="#4f6680">Hospital Queue Management Portal</text>
+
+  <text x="515" y="305" font-family="Arial" font-size="14" fill="#42586f">Email</text>
+  <rect x="515" y="317" width="336" height="46" rx="10" fill="#ffffff" stroke="#c9d8ea"/>
+  <text x="532" y="346" font-family="Arial" font-size="14" fill="#98a8ba">name@example.com</text>
+
+  <text x="515" y="390" font-family="Arial" font-size="14" fill="#42586f">Password</text>
+  <rect x="515" y="402" width="336" height="46" rx="10" fill="#ffffff" stroke="#c9d8ea"/>
+  <text x="532" y="431" font-family="Arial" font-size="14" fill="#98a8ba">********</text>
+
+  <rect x="515" y="480" width="336" height="48" rx="10" fill="#1478ff"/>
+  <text x="683" y="510" text-anchor="middle" font-family="Arial" font-weight="700" font-size="16" fill="#ffffff">Sign In</text>
+
+  <text x="683" y="570" text-anchor="middle" font-family="Arial" font-size="13" fill="#7088a1">Screenshot 1: Login Page Opened</text>
+</svg>

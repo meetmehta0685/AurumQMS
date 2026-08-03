@@ -1,18 +1,42 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import Link from 'next/link';
-import { ArrowLeft, LogOut, Pill } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
+import {
+  Pill,
+  Plus,
+  Clock,
+  User,
+  Stethoscope,
+  CheckCircle2,
+  AlertCircle,
+  PackageCheck,
+  PackagePlus,
+  Shield,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import { RoleHeader } from "@/components/layout/RoleHeader";
 
 interface PatientProfile {
   id: string;
@@ -46,63 +70,78 @@ export default function PharmaPortalPage() {
   const [items, setItems] = useState<DispenseItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
-  const [patientId, setPatientId] = useState('');
-  const [doctorId, setDoctorId] = useState('');
-  const [medicineName, setMedicineName] = useState('');
-  const [dosage, setDosage] = useState('');
-  const [frequency, setFrequency] = useState('');
-  const [duration, setDuration] = useState('');
-  const [quantity, setQuantity] = useState('1');
-  const [status, setStatus] = useState<'pending' | 'dispensed' | 'cancelled'>('dispensed');
-  const [notes, setNotes] = useState('');
+  const [patientId, setPatientId] = useState("");
+  const [doctorId, setDoctorId] = useState("");
+  const [medicineName, setMedicineName] = useState("");
+  const [dosage, setDosage] = useState("");
+  const [frequency, setFrequency] = useState("");
+  const [duration, setDuration] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [status, setStatus] = useState<"pending" | "dispensed" | "cancelled">(
+    "dispensed"
+  );
+  const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const selectedPatient = patients.find((patient) => patient.id === patientId) || null;
+  const selectedPatient =
+    patients.find((patient) => patient.id === patientId) || null;
 
   const fetchData = async () => {
     try {
       const [patientsRes, doctorsRes, itemsRes] = await Promise.all([
         supabase
-          .from('profiles')
-          .select('id, full_name, email, phone')
-          .eq('role', 'patient')
-          .order('full_name', { ascending: true }),
+          .from("profiles")
+          .select("id, full_name, email, phone")
+          .eq("role", "patient")
+          .order("full_name", { ascending: true }),
         supabase
-          .from('doctors')
-          .select('id, profile:profiles!doctors_profile_id_fkey(full_name)')
-          .order('created_at', { ascending: true }),
+          .from("doctors")
+          .select("id, profile:profiles!doctors_profile_id_fkey(full_name)")
+          .order("created_at", { ascending: true }),
         supabase
-          .from('pharmacy_dispenses')
-          .select('id, medicine_name, dosage, frequency, duration, quantity, dispense_status, patient:profiles!pharmacy_dispenses_patient_id_fkey(full_name)')
-          .order('created_at', { ascending: false }),
+          .from("pharmacy_dispenses")
+          .select(
+            "id, medicine_name, dosage, frequency, duration, quantity, dispense_status, patient:profiles!pharmacy_dispenses_patient_id_fkey(full_name)"
+          )
+          .order("created_at", { ascending: false }),
       ]);
 
       if (patientsRes.error) throw patientsRes.error;
       if (doctorsRes.error) throw doctorsRes.error;
       if (itemsRes.error) throw itemsRes.error;
 
-      const mappedDoctors: DoctorProfile[] = (doctorsRes.data || []).map((item: any) => ({
-        id: item.id,
-        profile: Array.isArray(item.profile) ? item.profile[0] : item.profile,
-      }));
+      const mappedDoctors: DoctorProfile[] = (doctorsRes.data || []).map(
+        (item: any) => ({
+          id: item.id,
+          profile: Array.isArray(item.profile)
+            ? item.profile[0]
+            : item.profile,
+        })
+      );
 
-      const mappedItems: DispenseItem[] = (itemsRes.data || []).map((item: any) => ({
-        id: item.id,
-        medicine_name: item.medicine_name,
-        dosage: item.dosage,
-        frequency: item.frequency,
-        duration: item.duration,
-        quantity: item.quantity,
-        dispense_status: item.dispense_status,
-        patient: Array.isArray(item.patient) ? item.patient[0] : item.patient,
-      }));
+      const mappedItems: DispenseItem[] = (itemsRes.data || []).map(
+        (item: any) => ({
+          id: item.id,
+          medicine_name: item.medicine_name,
+          dosage: item.dosage,
+          frequency: item.frequency,
+          duration: item.duration,
+          quantity: item.quantity,
+          dispense_status: item.dispense_status,
+          patient: Array.isArray(item.patient)
+            ? item.patient[0]
+            : item.patient,
+        })
+      );
 
       setPatients(patientsRes.data || []);
       setDoctors(mappedDoctors);
       setItems(mappedItems);
     } catch (error: any) {
-      console.error('Pharma portal fetch error:', error);
-      toast.error(error?.message || 'Failed to fetch pharmacy data. Check Supabase schema/policies.');
+      console.error("Pharma portal fetch error:", error);
+      toast.error(
+        error?.message || "Failed to fetch pharmacy data. Check Supabase connection."
+      );
     } finally {
       setLoadingData(false);
     }
@@ -113,11 +152,19 @@ export default function PharmaPortalPage() {
   }, [supabase]);
 
   const createDispense = async () => {
-    if (!patientId || !doctorId || !medicineName || !dosage || !frequency || !duration) return;
+    if (
+      !patientId ||
+      !doctorId ||
+      !medicineName ||
+      !dosage ||
+      !frequency ||
+      !duration
+    )
+      return;
 
     setSaving(true);
     try {
-      const { error } = await supabase.from('pharmacy_dispenses').insert({
+      const { error } = await supabase.from("pharmacy_dispenses").insert({
         patient_id: patientId,
         doctor_id: doctorId,
         medicine_name: medicineName,
@@ -126,26 +173,26 @@ export default function PharmaPortalPage() {
         duration,
         quantity: Number(quantity),
         dispense_status: status,
-        dispensed_at: status === 'dispensed' ? new Date().toISOString() : null,
+        dispensed_at: status === "dispensed" ? new Date().toISOString() : null,
         notes: notes || null,
       });
 
       if (error) throw error;
 
-      setPatientId('');
-      setDoctorId('');
-      setMedicineName('');
-      setDosage('');
-      setFrequency('');
-      setDuration('');
-      setQuantity('1');
-      setStatus('dispensed');
-      setNotes('');
-      toast.success('Pharmacy dispense saved');
+      setPatientId("");
+      setDoctorId("");
+      setMedicineName("");
+      setDosage("");
+      setFrequency("");
+      setDuration("");
+      setQuantity("1");
+      setStatus("dispensed");
+      setNotes("");
+      toast.success("Prescription dispense record saved");
       await fetchData();
     } catch (error) {
       console.error(error);
-      toast.error('Failed to save pharmacy dispense');
+      toast.error("Failed to save pharmacy dispense");
     } finally {
       setSaving(false);
     }
@@ -153,121 +200,266 @@ export default function PharmaPortalPage() {
 
   if (isLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-6xl mx-auto space-y-4">
-          <Skeleton className="h-10 w-32" />
-          <Skeleton className="h-72 w-full" />
+      <div className="min-h-screen bg-background">
+        <RoleHeader currentRole="pharma" />
+        <div className="max-w-7xl mx-auto p-6 space-y-6">
+          <Skeleton className="h-12 w-64 rounded-xl" />
+          <Skeleton className="h-72 w-full rounded-2xl" />
         </div>
       </div>
     );
   }
 
-  if (!profile || profile.role !== 'pharma') {
+  if (!profile || profile.role !== "pharma") {
     return (
-      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Access denied</CardTitle>
-            <CardDescription>Only pharmacy users can access this portal.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={logout} className="w-full">Return to Login</Button>
-          </CardContent>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md glass-card p-6 text-center space-y-4">
+          <div className="size-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto">
+            <AlertCircle className="size-8" />
+          </div>
+          <CardTitle className="text-xl font-bold">Access Restricted</CardTitle>
+          <CardDescription>
+            Only authorized pharmacy personnel can access this portal.
+          </CardDescription>
+          <Button onClick={logout} className="w-full">
+            Return to Sign In
+          </Button>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Home
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold">Pharmacy Portal</h1>
-              <p className="text-muted-foreground">Record medicines dispensed to patients</p>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+      {/* Unified Top Navigation */}
+      <RoleHeader currentRole="pharma" />
+
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+        {/* Pharma Hero Banner */}
+        <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 glass-card p-6 sm:p-8 glow-amber">
+          <div className="absolute -top-16 -right-16 size-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 gap-1.5">
+                  <Pill className="size-3.5" />
+                  Pharmacy Dispensary
+                </Badge>
+                <span className="text-xs text-muted-foreground">• Live Fulfillment Console</span>
+              </div>
+              <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-foreground">
+                Pharmacy Dispensary Workstation 💊
+              </h1>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Process real-time doctor prescriptions, fulfill patient medication orders, track stock quantities, and maintain audit logs.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
+              <div className="size-12 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <PackageCheck className="size-6" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispensary Log</p>
+                <p className="font-display text-xl font-bold text-foreground">{items.length} Fulfilled</p>
+                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Ready for Pick-up</span>
+              </div>
             </div>
           </div>
-          <Button variant="outline" onClick={logout}><LogOut className="w-4 h-4 mr-2" />Logout</Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Pill className="w-5 h-5" /> Record Dispense</CardTitle>
-            <CardDescription>Enter patient details and medicine dispatch information</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Select value={patientId} onValueChange={setPatientId}>
-              <SelectTrigger><SelectValue placeholder="Select patient" /></SelectTrigger>
-              <SelectContent>
-                {patients.map((patient) => (
-                  <SelectItem key={patient.id} value={patient.id}>{patient.full_name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={doctorId} onValueChange={setDoctorId}>
-              <SelectTrigger><SelectValue placeholder="Select prescribing doctor" /></SelectTrigger>
-              <SelectContent>
-                {doctors.map((doctor) => (
-                  <SelectItem key={doctor.id} value={doctor.id}>Dr. {doctor.profile?.full_name || 'Unknown'}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selectedPatient && (
-              <div className="md:col-span-2 p-3 rounded-lg border border-border bg-muted/40">
-                <p className="font-medium">Patient Details</p>
-                <p className="text-sm text-muted-foreground">Name: {selectedPatient.full_name}</p>
-                <p className="text-sm text-muted-foreground">Email: {selectedPatient.email}</p>
-                <p className="text-sm text-muted-foreground">Phone: {selectedPatient.phone || 'N/A'}</p>
-              </div>
-            )}
-            <Input value={medicineName} onChange={(e) => setMedicineName(e.target.value)} placeholder="Medicine name" />
-            <Input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="Dosage" />
-            <Input value={frequency} onChange={(e) => setFrequency(e.target.value)} placeholder="Frequency" />
-            <Input value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="Duration" />
-            <Input type="number" min={1} value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="Quantity" />
-            <Select value={status} onValueChange={(value: 'pending' | 'dispensed' | 'cancelled') => setStatus(value)}>
-              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">pending</SelectItem>
-                <SelectItem value="dispensed">dispensed</SelectItem>
-                <SelectItem value="cancelled">cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-            <Textarea className="md:col-span-2" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
-            <Button className="md:col-span-2" onClick={createDispense} disabled={saving}>Save Dispense</Button>
-          </CardContent>
-        </Card>
+        {/* Form & Log Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Create Dispense Card */}
+          <Card className="lg:col-span-6 glass-card border-border/60">
+            <CardHeader className="border-b border-border/40 pb-4">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <PackagePlus className="size-5 text-amber-500" />
+                Record Medication Dispense
+              </CardTitle>
+              <CardDescription>Log a new prescription fulfillment for a patient</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Select Patient</label>
+                  <Select value={patientId} onValueChange={setPatientId}>
+                    <SelectTrigger className="bg-background/50">
+                      <SelectValue placeholder="Choose patient..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {patients.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.full_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Dispenses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {items.length === 0 ? (
-              <p className="text-muted-foreground">No pharmacy dispenses found.</p>
-            ) : (
-              <div className="space-y-3">
-                {items.map((item) => (
-                  <div key={item.id} className="p-3 border border-border rounded-lg flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{item.patient?.full_name || 'Unknown'} • {item.medicine_name}</p>
-                      <p className="text-sm text-muted-foreground">{item.dosage} • {item.frequency} • {item.duration} • Qty {item.quantity}</p>
-                    </div>
-                    <Badge variant={item.dispense_status === 'dispensed' ? 'default' : 'outline'}>{item.dispense_status}</Badge>
-                  </div>
-                ))}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Prescribing Physician</label>
+                  <Select value={doctorId} onValueChange={setDoctorId}>
+                    <SelectTrigger className="bg-background/50">
+                      <SelectValue placeholder="Choose doctor..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {doctors.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          Dr. {d.profile?.full_name || "Specialist"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+
+              {selectedPatient && (
+                <div className="p-3 rounded-xl border border-amber-500/30 bg-amber-500/5 text-xs space-y-1">
+                  <p className="font-semibold text-amber-600 dark:text-amber-400">Patient Details:</p>
+                  <p className="text-foreground">{selectedPatient.full_name} • {selectedPatient.email}</p>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Medicine Name & Strength</label>
+                <Input
+                  value={medicineName}
+                  onChange={(e) => setMedicineName(e.target.value)}
+                  placeholder="e.g. Amoxicillin 500mg"
+                  className="bg-background/50"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Dosage</label>
+                  <Input
+                    value={dosage}
+                    onChange={(e) => setDosage(e.target.value)}
+                    placeholder="1 tablet"
+                    className="bg-background/50"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Frequency</label>
+                  <Input
+                    value={frequency}
+                    onChange={(e) => setFrequency(e.target.value)}
+                    placeholder="TDS (3x/day)"
+                    className="bg-background/50"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Duration</label>
+                  <Input
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    placeholder="5 Days"
+                    className="bg-background/50"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Quantity Dispensed</label>
+                  <Input
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    placeholder="15"
+                    className="bg-background/50"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Fulfillment Status</label>
+                  <Select value={status} onValueChange={(val: any) => setStatus(val)}>
+                    <SelectTrigger className="bg-background/50">
+                      <SelectValue placeholder="Choose status..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dispensed">Dispensed</SelectItem>
+                      <SelectItem value="pending">Pending Stock</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Pharmacist Notes</label>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Take after meals. Storage notes..."
+                  className="bg-background/50 min-h-16"
+                />
+              </div>
+
+              <Button
+                onClick={createDispense}
+                disabled={saving || !patientId || !doctorId || !medicineName || !dosage || !frequency || !duration}
+                className="w-full gap-2 shadow-lg shadow-amber-500/20"
+              >
+                {saving ? "Saving Dispense..." : "Confirm & Save Dispense Record"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Fulfillment Dispense Log */}
+          <Card className="lg:col-span-6 glass-card border-border/60">
+            <CardHeader className="border-b border-border/40 pb-4">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Pill className="size-5 text-amber-500" />
+                Medication Dispense Log
+              </CardTitle>
+              <CardDescription>Real-time pharmacy fulfillment activity</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {items.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">No pharmacy dispenses recorded yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {items.map((i) => (
+                    <div
+                      key={i.id}
+                      className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-background/50 hover:border-amber-500/40 transition-all gap-4"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className="size-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                          <Pill className="size-5" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground">
+                            {i.medicine_name} • <span className="text-xs text-muted-foreground">{i.dosage} ({i.frequency})</span>
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Patient: {i.patient?.full_name || "Record"} • Qty: {i.quantity} (For {i.duration})
+                          </p>
+                        </div>
+                      </div>
+
+                      <Badge
+                        variant="outline"
+                        className={`capitalize ${
+                          i.dispense_status === "dispensed"
+                            ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
+                            : "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                        }`}
+                      >
+                        {i.dispense_status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 }

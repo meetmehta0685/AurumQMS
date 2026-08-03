@@ -29,8 +29,8 @@ interface Notification {
 }
 
 interface NotificationBellProps {
-  userId: string;
-  userRole: "patient" | "doctor" | "admin";
+  userId?: string;
+  userRole?: string;
 }
 
 export function NotificationBell({ userId, userRole }: NotificationBellProps) {
