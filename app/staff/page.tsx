@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,22 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/client";
 import {
   Bed,
-  BedDouble,
-  ClipboardList,
-  ConciergeBell,
   Layers,
-  Sparkles,
   Users,
   CheckCircle2,
   Clock,
@@ -225,19 +213,22 @@ export default function StaffPortalPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+    <div className="min-h-screen bg-background pb-12">
       {/* Unified Top Navigation */}
       <RoleHeader currentRole="staff" />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+      <motion.main
+        className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.38, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+      >
         {/* Staff Operations Hero */}
-        <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 glass-card p-6 sm:p-8 glow-teal">
-          <div className="absolute -top-16 -right-16 size-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="relative overflow-hidden rounded-xl border border-stay/30 bg-card p-6 sm:p-8 shadow-sm">
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 gap-1.5">
+                <Badge variant="outline" className="border-stay/40 text-stay bg-stay/10 gap-1.5">
                   <Bed className="size-3.5" />
                   Property Operations
                 </Badge>
@@ -251,14 +242,14 @@ export default function StaffPortalPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
-              <div className="size-12 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4">
+              <div className="size-12 rounded-xl bg-stay/20 text-stay flex items-center justify-center">
                 <CheckCircle2 className="size-6" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rooms Ready</p>
                 <p className="font-display text-xl font-bold text-foreground">{inventory.ready} Units</p>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{inventory.cleaning} cleaning in progress</span>
+                <span className="text-xs text-stay font-medium">{inventory.cleaning} cleaning in progress</span>
               </div>
             </div>
           </div>
@@ -266,51 +257,51 @@ export default function StaffPortalPage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="glass-card border-border/60 hover:border-emerald-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-stay/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Rooms Ready
               </CardTitle>
-              <div className="size-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-stay/15 text-stay flex items-center justify-center">
                 <CheckCircle2 className="size-5" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="font-display text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="font-display text-3xl font-bold text-stay">
                 {inventory.ready}
               </div>
               <p className="text-xs text-muted-foreground mt-1">Available for check-in</p>
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-border/60 hover:border-amber-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-warning/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Cleaning in Progress
               </CardTitle>
-              <div className="size-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-warning/15 text-warning flex items-center justify-center">
                 <Clock className="size-5" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="font-display text-3xl font-bold text-amber-600 dark:text-amber-400">
+              <div className="font-display text-3xl font-bold text-warning">
                 {inventory.cleaning}
               </div>
               <p className="text-xs text-muted-foreground mt-1">Housekeeping active</p>
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-border/60 hover:border-rose-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-stay/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Maintenance Required
               </CardTitle>
-              <div className="size-10 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-stay/15 text-stay flex items-center justify-center">
                 <AlertTriangle className="size-5" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="font-display text-3xl font-bold text-rose-600 dark:text-rose-400">
+              <div className="font-display text-3xl font-bold text-stay">
                 {inventory.maintenance}
               </div>
               <p className="text-xs text-muted-foreground mt-1">Engineering maintenance</p>
@@ -321,41 +312,41 @@ export default function StaffPortalPage() {
         {/* Room Assignment Form & Arrivals List */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Allocation Form */}
-          <Card className="lg:col-span-5 glass-card border-border/60">
-            <CardHeader className="border-b border-border/40 pb-4">
+          <Card className="lg:col-span-5 bg-card border-border">
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Layers className="size-5 text-emerald-500" />
+                <Layers className="size-5 text-stay" />
                 Allocate Guest Room
               </CardTitle>
               <CardDescription>Assign room allocation for arriving guests</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <form onSubmit={handleCreateAssignment} className="space-y-4">
-                <div className="space-y-1.5">
+              <form onSubmit={handleCreateAssignment} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
                   <Label className="text-xs font-semibold">Guest Full Name</Label>
                   <Input
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
                     placeholder="e.g. John Smith"
-                    className="bg-background/50"
+                    className="bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <Label className="text-xs font-semibold">Reservation Code</Label>
                   <Input
                     value={reservationCode}
                     onChange={(e) => setReservationCode(e.target.value)}
                     placeholder="e.g. RES-1001"
-                    className="bg-background/50"
+                    className="bg-background"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="flex flex-col gap-1.5">
                     <Label className="text-xs font-semibold">Room Type</Label>
                     <Select value={roomTypeId} onValueChange={setRoomTypeId}>
-                      <SelectTrigger className="bg-background/50">
+                      <SelectTrigger className="bg-background">
                         <SelectValue placeholder="Category..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -368,29 +359,29 @@ export default function StaffPortalPage() {
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="flex flex-col gap-1.5">
                     <Label className="text-xs font-semibold">Floor Level</Label>
                     <Input
                       type="number"
                       value={floor}
                       onChange={(e) => setFloor(e.target.value)}
                       placeholder="3"
-                      className="bg-background/50"
+                      className="bg-background"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <Label className="text-xs font-semibold">Special Allocation Notes</Label>
                   <Input
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Near elevator, ocean view preference..."
-                    className="bg-background/50"
+                    className="bg-background"
                   />
                 </div>
 
-                <Button type="submit" disabled={isLoading} className="w-full gap-2 shadow-lg shadow-emerald-500/20">
+                <Button type="submit" disabled={isLoading} className="w-full gap-2 shadow-sm">
                   {isLoading ? "Saving Allocation..." : "Confirm Room Allocation"}
                 </Button>
               </form>
@@ -398,10 +389,10 @@ export default function StaffPortalPage() {
           </Card>
 
           {/* Today's Arrivals List */}
-          <Card className="lg:col-span-7 glass-card border-border/60">
-            <CardHeader className="border-b border-border/40 pb-4">
+          <Card className="lg:col-span-7 bg-card border-border">
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Users className="size-5 text-emerald-500" />
+                <Users className="size-5 text-stay" />
                 Today&apos;s Guest Arrivals Timeline ({arrivals.length})
               </CardTitle>
               <CardDescription>Scheduled check-ins for {today}</CardDescription>
@@ -410,22 +401,22 @@ export default function StaffPortalPage() {
               {arrivals.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">No guest arrivals scheduled today.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3">
                   {arrivals.map((a) => (
                     <div
                       key={a.id}
-                      className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-background/50 hover:border-emerald-500/40 transition-all"
+                      className="flex items-center justify-between p-4 rounded-2xl border border-border bg-background hover:border-stay/40 transition-all"
                     >
                       <div>
                         <p className="font-semibold text-foreground">
-                          {a.last_name} • <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400">#{a.reservation_code}</span>
+                          {a.last_name} • <span className="font-mono text-xs text-stay">#{a.reservation_code}</span>
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Room Category: {a.room_types?.name || "Standard Room"}
                         </p>
                       </div>
 
-                      <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                      <Badge variant="outline" className="border-stay/30 text-stay bg-stay/10">
                         Arrival Today
                       </Badge>
                     </div>
@@ -437,10 +428,10 @@ export default function StaffPortalPage() {
         </div>
 
         {/* Room Inventory & Status Grid */}
-        <Card className="glass-card border-border/60">
-          <CardHeader className="border-b border-border/40 pb-4">
+        <Card className="bg-card border-border">
+          <CardHeader className="border-b border-border pb-4">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Building className="size-5 text-emerald-500" />
+              <Building className="size-5 text-stay" />
               Property Room Inventory & Housekeeping Controls
             </CardTitle>
             <CardDescription>Update live room status for all floors</CardDescription>
@@ -453,7 +444,7 @@ export default function StaffPortalPage() {
                 {rooms.map((room) => (
                   <div
                     key={room.id}
-                    className="p-4 rounded-2xl border border-border/50 bg-background/50 space-y-3"
+                    className="p-4 rounded-2xl border border-border bg-background flex flex-col gap-3"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-display font-bold text-lg text-foreground">
@@ -463,10 +454,10 @@ export default function StaffPortalPage() {
                         variant="outline"
                         className={`capitalize text-[10px] ${
                           room.status === "ready"
-                            ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
+                            ? "border-stay/30 text-stay bg-stay/10"
                             : room.status === "cleaning"
-                            ? "border-amber-500/30 text-amber-600 bg-amber-500/10"
-                            : "border-rose-500/30 text-rose-600 bg-rose-500/10"
+                            ? "border-warning/30 text-warning bg-warning/10"
+                            : "border-stay/30 text-stay bg-stay/10"
                         }`}
                       >
                         {room.status}
@@ -508,7 +499,7 @@ export default function StaffPortalPage() {
             )}
           </CardContent>
         </Card>
-      </main>
+      </motion.main>
     </div>
   );
 }

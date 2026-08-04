@@ -409,7 +409,7 @@ export default function AdminDoctorsPage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-6xl mx-auto space-y-4">
+        <div className="max-w-6xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-64 w-full" />
         </div>
@@ -451,7 +451,7 @@ export default function AdminDoctorsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {pendingDoctors.map((pending) => (
                   <div
                     key={pending.id}
@@ -598,7 +598,7 @@ export default function AdminDoctorsPage() {
                 Set up profile for {selectedPending?.full_name}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="flex flex-col gap-4 py-4 max-h-[60vh] overflow-y-auto">
               <div>
                 <Label>Department *</Label>
                 <Select value={departmentId} onValueChange={setDepartmentId}>
@@ -719,7 +719,7 @@ export default function AdminDoctorsPage() {
                 Update profile for {editingDoctor?.profile?.full_name}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="flex flex-col gap-4 py-4 max-h-[60vh] overflow-y-auto">
               <div>
                 <Label>Department *</Label>
                 <Select value={departmentId} onValueChange={setDepartmentId}>

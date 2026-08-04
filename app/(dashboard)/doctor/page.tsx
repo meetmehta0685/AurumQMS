@@ -24,11 +24,9 @@ import {
   Activity,
   ArrowRight,
   User,
-  Sparkles,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
-import { RoleHeader } from "@/components/layout/RoleHeader";
 
 interface DoctorStats {
   todayAppointments: number;
@@ -136,8 +134,7 @@ export default function DoctorDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <RoleHeader currentRole="doctor" />
-        <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <div className="max-w-7xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-12 w-64 rounded-xl" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
@@ -152,7 +149,7 @@ export default function DoctorDashboard() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md glass-card p-6 text-center space-y-4">
+        <Card className="w-full max-w-md bg-card p-6 text-center flex flex-col gap-4">
           <div className="size-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto">
             <User className="size-8" />
           </div>
@@ -169,19 +166,16 @@ export default function DoctorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+    <div className="min-h-screen bg-background pb-12">
       {/* Unified Top Navigation */}
-      <RoleHeader currentRole="doctor" />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8">
         {/* Doctor Hero Welcome Banner */}
-        <div className="relative overflow-hidden rounded-3xl border border-indigo-500/30 glass-card p-6 sm:p-8 glow-indigo">
-          <div className="absolute -top-16 -right-16 size-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="relative overflow-hidden rounded-xl border border-info/30 bg-card p-6 sm:p-8 shadow-sm">
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-indigo-500/40 text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 gap-1.5">
+                <Badge variant="outline" className="border-info/40 text-info bg-info/10 gap-1.5">
                   <Stethoscope className="size-3.5" />
                   Clinical Workstation
                 </Badge>
@@ -195,7 +189,7 @@ export default function DoctorDashboard() {
               </p>
             </div>
 
-            <Button asChild size="lg" className="shadow-lg shadow-indigo-500/20 gap-2 shrink-0">
+            <Button asChild size="lg" className="shadow-sm gap-2 shrink-0">
               <Link href="/doctor/queue">
                 <Activity className="size-4" />
                 Launch Live Queue Workstation
@@ -206,12 +200,12 @@ export default function DoctorDashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="glass-card border-border/60 hover:border-indigo-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-info/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Today&apos;s Appointments
               </CardTitle>
-              <div className="size-10 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-info/15 text-info flex items-center justify-center">
                 <Calendar className="size-5" />
               </div>
             </CardHeader>
@@ -223,34 +217,34 @@ export default function DoctorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-border/60 hover:border-amber-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-warning/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Patients in Waiting Queue
               </CardTitle>
-              <div className="size-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-warning/15 text-warning flex items-center justify-center">
                 <Users className="size-5" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="font-display text-3xl font-bold text-amber-600 dark:text-amber-400">
+              <div className="font-display text-3xl font-bold text-warning">
                 {loadingData ? "..." : stats.patientsInQueue}
               </div>
               <p className="text-xs text-muted-foreground mt-1">Active waiting token queue</p>
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-border/60 hover:border-emerald-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-stay/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Completed Consultations
               </CardTitle>
-              <div className="size-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-stay/15 text-stay flex items-center justify-center">
                 <CheckCircle className="size-5" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="font-display text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="font-display text-3xl font-bold text-stay">
                 {loadingData ? "..." : stats.completedToday}
               </div>
               <p className="text-xs text-muted-foreground mt-1">Finished OPD sessions today</p>
@@ -260,29 +254,29 @@ export default function DoctorDashboard() {
 
         {/* Today's Queue List */}
         {upcomingAppointments.length > 0 && (
-          <Card className="glass-card border-border/60">
-            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border/40">
+          <Card className="bg-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border">
               <div>
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Users className="size-5 text-indigo-500" />
+                  <Users className="size-5 text-info" />
                   Active OPD Queue Roster
                 </CardTitle>
                 <CardDescription>Patients currently waiting for consultation</CardDescription>
               </div>
-              <Button asChild variant="ghost" size="sm" className="gap-1.5 text-indigo-600 dark:text-indigo-400">
+              <Button asChild variant="ghost" size="sm" className="gap-1.5 text-info">
                 <Link href="/doctor/queue">
                   Open Queue Console <ArrowRight className="size-4" />
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent className="pt-6 space-y-3">
+            <CardContent className="pt-6 flex flex-col gap-3">
               {upcomingAppointments.map((apt) => (
                 <div
                   key={apt.id}
-                  className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-background/50 hover:border-indigo-500/40 transition-all"
+                  className="flex items-center justify-between p-4 rounded-2xl border border-border bg-background hover:border-info/40 transition-all"
                 >
                   <div className="flex items-center gap-3.5">
-                    <div className="size-10 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-mono font-bold text-sm flex items-center justify-center">
+                    <div className="size-10 rounded-xl bg-info/15 text-info font-mono font-bold text-sm flex items-center justify-center">
                       #{apt.token_number || "-"}
                     </div>
                     <div>
@@ -295,7 +289,7 @@ export default function DoctorDashboard() {
                     </div>
                   </div>
 
-                  <Badge variant="outline" className="capitalize border-indigo-500/30 text-indigo-600 dark:text-indigo-400 bg-indigo-500/10">
+                  <Badge variant="outline" className="capitalize border-info/30 text-info bg-info/10">
                     {apt.status}
                   </Badge>
                 </div>
@@ -305,23 +299,23 @@ export default function DoctorDashboard() {
         )}
 
         {/* Doctor Actions */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <h2 className="font-display text-xl font-bold">Clinical Workspace Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <Link href="/doctor/queue" className="group">
-              <Card className="glass-card border-border/60 hover:border-indigo-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-info/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-info/15 text-info flex items-center justify-center transition-transform group-hover:scale-110">
                     <Stethoscope className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-info transition-colors">
                     Token Queue
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Call patients & record consultation notes.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-info gap-1">
                   <span>Open Console</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -329,19 +323,19 @@ export default function DoctorDashboard() {
             </Link>
 
             <Link href="/doctor/schedule" className="group">
-              <Card className="glass-card border-border/60 hover:border-purple-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-info/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-info/15 text-info flex items-center justify-center transition-transform group-hover:scale-110">
                     <Calendar className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-info transition-colors">
                     My Schedule
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Set consultation timings & availability slots.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-purple-600 dark:text-purple-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-info gap-1">
                   <span>Manage Slots</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -349,19 +343,19 @@ export default function DoctorDashboard() {
             </Link>
 
             <Link href="/doctor/laboratory" className="group">
-              <Card className="glass-card border-border/60 hover:border-cyan-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-care/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-care/15 text-care flex items-center justify-center transition-transform group-hover:scale-110">
                     <FlaskConical className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-care transition-colors">
                     Order Lab Tests
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Order bloodwork & review diagnostic results.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-cyan-600 dark:text-cyan-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-care gap-1">
                   <span>Order Tests</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -369,19 +363,19 @@ export default function DoctorDashboard() {
             </Link>
 
             <Link href="/doctor/pharma" className="group">
-              <Card className="glass-card border-border/60 hover:border-amber-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-warning/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-warning/15 text-warning flex items-center justify-center transition-transform group-hover:scale-110">
                     <Pill className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-warning transition-colors">
                     Pharmacy Orders
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Issue prescriptions & verify medication stock.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-amber-600 dark:text-amber-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-warning gap-1">
                   <span>E-Prescribe</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -389,19 +383,19 @@ export default function DoctorDashboard() {
             </Link>
 
             <Link href="/doctor/discharge" className="group">
-              <Card className="glass-card border-border/60 hover:border-rose-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-stay/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-stay/15 text-stay flex items-center justify-center transition-transform group-hover:scale-110">
                     <FileDown className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-stay transition-colors">
                     Discharge Summary
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Authorize discharge notes & PDF summary.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-rose-600 dark:text-rose-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-stay gap-1">
                   <span>Authorize Discharge</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>

@@ -1,40 +1,46 @@
 import Link from "next/link";
 import { ArrowLeft, Shield, Lock, Eye, Database, Bell, Users, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MotionPage } from "@/components/ui/motion";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md supports-backdrop-filter:bg-background/75">
+        <div className="mx-auto flex min-h-16 max-w-4xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-2">
               <ArrowLeft className="w-4 h-4" />
-              Back to Home
+              Back to home
             </Button>
           </Link>
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <div className="flex items-center gap-2">
+            <Shield className="size-5 text-primary" />
             <span className="font-semibold">Privacy Policy</span>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-4 py-12">
-        <div className="bg-card rounded-2xl shadow-sm border p-8 md:p-12">
+      <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+        <MotionPage>
+        <div className="rounded-xl border bg-card p-6 shadow-sm sm:p-8 md:p-12">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Privacy Policy</h1>
             <p className="text-muted-foreground">Last updated: January 15, 2026</p>
           </div>
 
-          <div className="prose prose-gray max-w-none space-y-8">
+          <div className="prose prose-gray max-w-none flex flex-col gap-8">
             {/* Introduction */}
             <section>
               <p className="text-muted-foreground leading-relaxed">
-                At HealthCare, we take your privacy seriously. This Privacy Policy explains how we collect, 
-                use, disclose, and safeguard your information when you use our healthcare queue management 
+                At AURUM QMS, we take your privacy seriously. This Privacy Policy explains how we collect,
+                use, disclose, and safeguard your information when you use our care and stay operations
                 platform. Please read this policy carefully to understand our practices regarding your 
                 personal data.
               </p>
@@ -48,10 +54,10 @@ export default function PrivacyPolicyPage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">Information We Collect</h2>
               </div>
-              <div className="pl-13 space-y-4">
+              <div className="pl-13 flex flex-col gap-4">
                 <div>
                   <h3 className="font-medium text-foreground mb-2">Personal Information</h3>
-                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                  <ul className="list-disc list-inside text-muted-foreground flex flex-col gap-1">
                     <li>Name, email address, and contact information</li>
                     <li>Date of birth and gender</li>
                     <li>Medical history and health-related information</li>
@@ -61,7 +67,7 @@ export default function PrivacyPolicyPage() {
                 </div>
                 <div>
                   <h3 className="font-medium text-foreground mb-2">Technical Information</h3>
-                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                  <ul className="list-disc list-inside text-muted-foreground flex flex-col gap-1">
                     <li>IP address and device information</li>
                     <li>Browser type and operating system</li>
                     <li>Usage data and interaction patterns</li>
@@ -79,8 +85,8 @@ export default function PrivacyPolicyPage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">How We Use Your Information</h2>
               </div>
-              <ul className="list-disc list-inside text-muted-foreground space-y-2 pl-13">
-                <li>To provide and maintain our healthcare queue management services</li>
+              <ul className="list-disc list-inside text-muted-foreground flex flex-col gap-2 pl-13">
+                <li>To provide and maintain our care and stay operations services</li>
                 <li>To schedule and manage your medical appointments</li>
                 <li>To communicate with you about appointments, updates, and support</li>
                 <li>To improve our services and user experience</li>
@@ -114,9 +120,9 @@ export default function PrivacyPolicyPage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">Data Sharing</h2>
               </div>
-              <div className="pl-13 space-y-3 text-muted-foreground">
+              <div className="pl-13 flex flex-col gap-3 text-muted-foreground">
                 <p>We may share your information with:</p>
-                <ul className="list-disc list-inside space-y-1">
+                <ul className="list-disc list-inside flex flex-col gap-1">
                   <li>Healthcare providers involved in your care</li>
                   <li>Service providers who assist in operating our platform</li>
                   <li>Legal authorities when required by law</li>
@@ -136,7 +142,7 @@ export default function PrivacyPolicyPage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">Your Rights</h2>
               </div>
-              <ul className="list-disc list-inside text-muted-foreground space-y-2 pl-13">
+              <ul className="list-disc list-inside text-muted-foreground flex flex-col gap-2 pl-13">
                 <li>Access and review your personal information</li>
                 <li>Request correction of inaccurate data</li>
                 <li>Request deletion of your data (subject to legal requirements)</li>
@@ -173,7 +179,7 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-3">
                   If you have any questions about this Privacy Policy or our data practices, please contact us:
                 </p>
-                <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                <div className="bg-muted/50 rounded-lg p-4 flex flex-col gap-2">
                   <p><strong>Email:</strong> <a href="mailto:privacy@healthcare.com" className="text-primary hover:underline">privacy@healthcare.com</a></p>
                   <p><strong>Support:</strong> <a href="mailto:support@healthcare.com" className="text-primary hover:underline">support@healthcare.com</a></p>
                 </div>
@@ -190,13 +196,14 @@ export default function PrivacyPolicyPage() {
             </section>
           </div>
         </div>
+        </MotionPage>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/50 mt-12">
+      <footer className="border-t border-border bg-card mt-12">
         <div className="max-w-4xl mx-auto px-4 py-6 text-center">
           <p className="text-sm text-muted-foreground">
-            © 2026 HealthCare. All rights reserved.
+            © 2026 AURUM QMS. All rights reserved.
           </p>
         </div>
       </footer>

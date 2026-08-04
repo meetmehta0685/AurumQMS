@@ -391,12 +391,12 @@ export default function PatientAppointmentsPage() {
     return (
       <div className="min-h-screen bg-background">
         {/* Header Skeleton */}
-        <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
+        <header className="bg-card border-b border-border sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-4 py-4">
             <Skeleton className="h-8 w-48" />
           </div>
         </header>
-        <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <div className="max-w-4xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-64 w-full rounded-xl" />
@@ -408,7 +408,7 @@ export default function PatientAppointmentsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Header */}
-      <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50 shadow-sm">
+      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -461,9 +461,9 @@ export default function PatientAppointmentsPage() {
                       </div>
                     </div>
                   </DialogHeader>
-                  <div className="space-y-5 py-4">
+                  <div className="flex flex-col gap-5 py-4">
                     {/* Department Selection */}
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <Label className="text-sm font-semibold flex items-center gap-2">
                         <Building2 className="w-4 h-4 text-primary" />
                         Department
@@ -491,7 +491,7 @@ export default function PatientAppointmentsPage() {
 
                     {/* Doctor Selection */}
                     {selectedDepartment && (
-                      <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                         <Label className="text-sm font-semibold flex items-center gap-2">
                           <Stethoscope className="w-4 h-4 text-chart-1" />
                           Doctor
@@ -538,7 +538,7 @@ export default function PatientAppointmentsPage() {
 
                     {/* Date Selection */}
                     {selectedDoctor && (
-                      <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                         <Label className="text-sm font-semibold flex items-center gap-2">
                           <CalendarDays className="w-4 h-4 text-primary" />
                           Select Date
@@ -561,7 +561,7 @@ export default function PatientAppointmentsPage() {
 
                     {/* Time Slots */}
                     {selectedDate && (
-                      <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                         <Label className="text-sm font-semibold flex items-center gap-2">
                           <Clock className="w-4 h-4 text-chart-2" />
                           Available Time Slots
@@ -611,7 +611,7 @@ export default function PatientAppointmentsPage() {
 
                     {/* Notes */}
                     {selectedTime && (
-                      <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                         <Label className="text-sm font-semibold">
                           Additional Notes (Optional)
                         </Label>
@@ -678,8 +678,8 @@ export default function PatientAppointmentsPage() {
         </div>
 
         {/* Appointments Tabs */}
-        <Tabs defaultValue="upcoming" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-card/70 backdrop-blur-sm p-1.5 rounded-xl shadow-sm border border-border h-14">
+        <Tabs defaultValue="upcoming" className="flex flex-col gap-6">
+          <TabsList className="grid w-full grid-cols-2 bg-card p-1.5 rounded-xl shadow-sm border border-border h-14">
             <TabsTrigger
               value="upcoming"
               className="flex items-center justify-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg h-full transition-all font-medium"
@@ -697,7 +697,7 @@ export default function PatientAppointmentsPage() {
           </TabsList>
 
           <TabsContent value="upcoming">
-            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden">
+            <Card className="border-0 shadow-xl bg-card overflow-hidden">
               <CardHeader className="bg-muted border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
@@ -735,26 +735,26 @@ export default function PatientAppointmentsPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="flex flex-col gap-4">
                     {upcomingAppointments.map((apt, index) => (
                       <div
                         key={apt.id}
-                        className="group flex items-center justify-between p-5 bg-card rounded-2xl border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+                        className="group flex items-center justify-between p-5 bg-card rounded-2xl border border-border hover:border-primary/50 hover:shadow-sm transition-all duration-300"
                         style={{ animationDelay: `${index * 100}ms` }}
                       >
                         <div className="flex items-center gap-4">
                           <div className="relative">
-                            <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
+                            <div className="size-14 bg-primary rounded-2xl flex items-center justify-center shadow-sm">
                               {apt.token_number ? (
                                 <span className="text-primary-foreground font-bold text-lg">
                                   #{apt.token_number}
                                 </span>
                               ) : (
-                                <Stethoscope className="w-7 h-7 text-primary-foreground" />
+                                <Stethoscope className="size-7 text-primary-foreground" />
                               )}
                             </div>
-                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-chart-1 rounded-full border-2 border-card flex items-center justify-center">
-                              <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+                            <div className="absolute -bottom-1 -right-1 size-5 rounded-full border-2 border-card bg-chart-1 flex items-center justify-center">
+                              <div className="size-2 rounded-full bg-primary-foreground"></div>
                             </div>
                           </div>
                           <div>
@@ -807,7 +807,7 @@ export default function PatientAppointmentsPage() {
           </TabsContent>
 
           <TabsContent value="past">
-            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden">
+            <Card className="border-0 shadow-xl bg-card overflow-hidden">
               <CardHeader className="bg-muted border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-muted-foreground rounded-xl flex items-center justify-center">
@@ -833,7 +833,7 @@ export default function PatientAppointmentsPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="flex flex-col gap-4">
                     {pastAppointments.map((apt, index) => (
                       <div
                         key={apt.id}
@@ -885,8 +885,8 @@ export default function PatientAppointmentsPage() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-12 py-6 border-t border-border bg-card/50">
-        <div className="max-w-4xl mx-auto px-4 text-center space-y-2">
+      <footer className="mt-12 py-6 border-t border-border bg-card">
+        <div className="max-w-4xl mx-auto px-4 text-center flex flex-col gap-2">
           <div className="flex flex-wrap justify-center items-center gap-2 text-sm text-muted-foreground">
             <a
               href="mailto:support@healthcare.com"

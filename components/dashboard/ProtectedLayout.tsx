@@ -29,7 +29,7 @@ export function ProtectedLayout({
 
   if (isLoading) {
     return (
-      <div className="space-y-4 p-4">
+      <div className="flex flex-col gap-4 p-4">
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-96 w-full" />
       </div>

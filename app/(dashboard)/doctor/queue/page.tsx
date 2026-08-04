@@ -232,7 +232,7 @@ export default function DoctorQueuePage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-64 w-full" />
         </div>
@@ -272,7 +272,7 @@ export default function DoctorQueuePage() {
             </CardHeader>
             <CardContent>
               {currentPatient ? (
-                <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/20">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
@@ -319,11 +319,11 @@ export default function DoctorQueuePage() {
                     </div>
                   </div>
                   {currentPatient.notes && (
-                    <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                      <p className="text-sm font-medium text-yellow-800">
+                    <div className="p-3 bg-warning rounded-lg border border-warning">
+                      <p className="text-sm font-medium text-warning">
                         Patient Notes:
                       </p>
-                      <p className="text-sm text-yellow-700">
+                      <p className="text-sm text-warning">
                         {currentPatient.notes}
                       </p>
                     </div>
@@ -360,7 +360,7 @@ export default function DoctorQueuePage() {
                   <p className="text-muted-foreground">No patients in queue</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3">
                   {queue.map((patient, index) => (
                     <div
                       key={patient.id}
@@ -437,7 +437,7 @@ export default function DoctorQueuePage() {
                 Add diagnosis and notes for {currentPatient?.patient?.full_name}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               <div>
                 <label className="text-sm font-medium">Diagnosis</label>
                 <Textarea

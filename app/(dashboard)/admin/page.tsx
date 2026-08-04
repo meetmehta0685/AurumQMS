@@ -26,11 +26,9 @@ import {
   Activity,
   ArrowRight,
   User,
-  Sparkles,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
-import { RoleHeader } from "@/components/layout/RoleHeader";
 
 interface AdminStats {
   totalDoctors: number;
@@ -158,8 +156,7 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <RoleHeader currentRole="admin" />
-        <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <div className="max-w-7xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-12 w-64 rounded-xl" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
@@ -174,7 +171,7 @@ export default function AdminDashboard() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md glass-card p-6 text-center space-y-4">
+        <Card className="w-full max-w-md bg-card p-6 text-center flex flex-col gap-4">
           <div className="size-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto">
             <User className="size-8" />
           </div>
@@ -191,19 +188,16 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+    <div className="min-h-screen bg-background pb-12">
       {/* Unified Top Navigation */}
-      <RoleHeader currentRole="admin" />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8">
         {/* Admin Command Center Banner */}
-        <div className="relative overflow-hidden rounded-3xl border border-purple-500/30 glass-card p-6 sm:p-8 glow-indigo">
-          <div className="absolute -top-16 -right-16 size-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="relative overflow-hidden rounded-xl border border-info/30 bg-card p-6 sm:p-8 shadow-sm">
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-purple-500/40 text-purple-600 dark:text-purple-400 bg-purple-500/10 gap-1.5">
+                <Badge variant="outline" className="border-info/40 text-info bg-info/10 gap-1.5">
                   <Shield className="size-3.5" />
                   Command Center
                 </Badge>
@@ -217,14 +211,14 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
-              <div className="size-12 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4">
+              <div className="size-12 rounded-xl bg-info/20 text-info flex items-center justify-center">
                 <Activity className="size-6 animate-pulse" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Operational</p>
                 <p className="font-display text-lg font-bold text-foreground">100% Online</p>
-                <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">All Services Running</span>
+                <span className="text-xs text-info font-medium">All Services Running</span>
               </div>
             </div>
           </div>
@@ -232,12 +226,12 @@ export default function AdminDashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="glass-card border-border/60 hover:border-purple-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-info/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Total Doctors
               </CardTitle>
-              <div className="size-10 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-info/15 text-info flex items-center justify-center">
                 <Stethoscope className="size-5" />
               </div>
             </CardHeader>
@@ -249,12 +243,12 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-border/60 hover:border-teal-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-care/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Total Patients
               </CardTitle>
-              <div className="size-10 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-care/15 text-care flex items-center justify-center">
                 <Users className="size-5" />
               </div>
             </CardHeader>
@@ -266,12 +260,12 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-border/60 hover:border-indigo-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-info/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Departments
               </CardTitle>
-              <div className="size-10 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-info/15 text-info flex items-center justify-center">
                 <Building2 className="size-5" />
               </div>
             </CardHeader>
@@ -283,12 +277,12 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-border/60 hover:border-amber-500/40 transition-all">
+          <Card className="bg-card border-border hover:border-warning/40 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Today&apos;s OPD Volume
               </CardTitle>
-              <div className="size-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-warning/15 text-warning flex items-center justify-center">
                 <Calendar className="size-5" />
               </div>
             </CardHeader>
@@ -297,10 +291,10 @@ export default function AdminDashboard() {
                 {loadingData ? "..." : stats.todayAppointments}
               </div>
               <div className="flex gap-2 mt-1">
-                <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                <Badge variant="outline" className="text-[10px] border-stay/30 text-stay bg-stay/10">
                   {stats.completedToday} done
                 </Badge>
-                <Badge variant="outline" className="text-[10px] border-amber-500/30 text-amber-600 bg-amber-500/10">
+                <Badge variant="outline" className="text-[10px] border-warning/30 text-warning bg-warning/10">
                   {stats.pendingToday} pending
                 </Badge>
               </div>
@@ -310,29 +304,29 @@ export default function AdminDashboard() {
 
         {/* Today's Activity */}
         {recentAppointments.length > 0 && (
-          <Card className="glass-card border-border/60">
-            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border/40">
+          <Card className="bg-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border">
               <div>
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <TrendingUp className="size-5 text-purple-500" />
+                  <TrendingUp className="size-5 text-info" />
                   Live OPD Activity Timeline
                 </CardTitle>
                 <CardDescription>Recent patient check-ins and appointments</CardDescription>
               </div>
-              <Button asChild variant="ghost" size="sm" className="gap-1.5 text-purple-600 dark:text-purple-400">
+              <Button asChild variant="ghost" size="sm" className="gap-1.5 text-info">
                 <Link href="/admin/appointments">
                   View Full Registry <ArrowRight className="size-4" />
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent className="pt-6 space-y-3">
+            <CardContent className="pt-6 flex flex-col gap-3">
               {recentAppointments.map((apt) => (
                 <div
                   key={apt.id}
-                  className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-background/50 hover:border-purple-500/40 transition-all"
+                  className="flex items-center justify-between p-4 rounded-2xl border border-border bg-background hover:border-info/40 transition-all"
                 >
                   <div className="flex items-center gap-3.5">
-                    <div className="size-10 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                    <div className="size-10 rounded-xl bg-info/15 text-info flex items-center justify-center">
                       <Clock className="size-5" />
                     </div>
                     <div>
@@ -346,7 +340,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <Badge variant="outline" className="capitalize border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/10">
+                  <Badge variant="outline" className="capitalize border-info/30 text-info bg-info/10">
                     {apt.status}
                   </Badge>
                 </div>
@@ -356,23 +350,23 @@ export default function AdminDashboard() {
         )}
 
         {/* Admin Management Grid */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <h2 className="font-display text-xl font-bold">Hospital Operations Management</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <Link href="/admin/doctors" className="group">
-              <Card className="glass-card border-border/60 hover:border-purple-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-info/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-info/15 text-info flex items-center justify-center transition-transform group-hover:scale-110">
                     <Users className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-info transition-colors">
                     Doctors
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Manage medical rosters & credentials.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-purple-600 dark:text-purple-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-info gap-1">
                   <span>Manage Roster</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -380,19 +374,19 @@ export default function AdminDashboard() {
             </Link>
 
             <Link href="/admin/departments" className="group">
-              <Card className="glass-card border-border/60 hover:border-indigo-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-info/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-info/15 text-info flex items-center justify-center transition-transform group-hover:scale-110">
                     <Building2 className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-info transition-colors">
                     Departments
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Configure clinical specialties & beds.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-info gap-1">
                   <span>View Units</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -400,19 +394,19 @@ export default function AdminDashboard() {
             </Link>
 
             <Link href="/admin/appointments" className="group">
-              <Card className="glass-card border-border/60 hover:border-teal-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-care/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-care/15 text-care flex items-center justify-center transition-transform group-hover:scale-110">
                     <Calendar className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-care transition-colors">
                     Appointments
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Hospital-wide OPD schedule logs.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-teal-600 dark:text-teal-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-care gap-1">
                   <span>View Schedule</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -420,19 +414,19 @@ export default function AdminDashboard() {
             </Link>
 
             <Link href="/admin/laboratory" className="group">
-              <Card className="glass-card border-border/60 hover:border-cyan-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-care/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-care/15 text-care flex items-center justify-center transition-transform group-hover:scale-110">
                     <FlaskConical className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-care transition-colors">
                     Laboratory
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Monitor diagnostic test orders.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-cyan-600 dark:text-cyan-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-care gap-1">
                   <span>Audit Diagnostics</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -440,19 +434,19 @@ export default function AdminDashboard() {
             </Link>
 
             <Link href="/admin/pharma" className="group">
-              <Card className="glass-card border-border/60 hover:border-amber-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-warning/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-warning/15 text-warning flex items-center justify-center transition-transform group-hover:scale-110">
                     <Pill className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-warning transition-colors">
                     Pharmacy
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Dispensary stock & fulfillment logs.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-amber-600 dark:text-amber-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-warning gap-1">
                   <span>Track Dispensary</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -460,19 +454,19 @@ export default function AdminDashboard() {
             </Link>
 
             <Link href="/admin/discharge" className="group">
-              <Card className="glass-card border-border/60 hover:border-rose-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-stay/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-stay/15 text-stay flex items-center justify-center transition-transform group-hover:scale-110">
                     <FileDown className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-stay transition-colors">
                     Discharge
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Audit patient discharge records.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-rose-600 dark:text-rose-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-stay gap-1">
                   <span>Audit Records</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>

@@ -207,7 +207,7 @@ export default function AdminAppointmentsPage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-6xl mx-auto space-y-4">
+        <div className="max-w-6xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-64 w-full" />
         </div>

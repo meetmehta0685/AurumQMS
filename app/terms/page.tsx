@@ -1,39 +1,45 @@
 import Link from "next/link";
 import { ArrowLeft, ScrollText, CheckCircle, AlertTriangle, Scale, CreditCard, Ban, RefreshCw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MotionPage } from "@/components/ui/motion";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md supports-backdrop-filter:bg-background/75">
+        <div className="mx-auto flex min-h-16 max-w-4xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-2">
               <ArrowLeft className="w-4 h-4" />
-              Back to Home
+              Back to home
             </Button>
           </Link>
-          <div className="flex items-center gap-2">
-            <ScrollText className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <div className="flex items-center gap-2">
+            <ScrollText className="size-5 text-primary" />
             <span className="font-semibold">Terms of Service</span>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-4 py-12">
-        <div className="bg-card rounded-2xl shadow-sm border p-8 md:p-12">
+      <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+        <MotionPage>
+        <div className="rounded-xl border bg-card p-6 shadow-sm sm:p-8 md:p-12">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Terms of Service</h1>
             <p className="text-muted-foreground">Last updated: January 15, 2026</p>
           </div>
 
-          <div className="prose prose-gray max-w-none space-y-8">
+          <div className="prose prose-gray max-w-none flex flex-col gap-8">
             {/* Introduction */}
             <section>
               <p className="text-muted-foreground leading-relaxed">
-                Welcome to HealthCare. These Terms of Service (&quot;Terms&quot;) govern your use of our healthcare 
+                Welcome to AURUM QMS. These Terms of Service (&quot;Terms&quot;) govern your use of our care and stay
                 queue management platform and services. By accessing or using our platform, you agree to 
                 be bound by these Terms. If you do not agree to these Terms, please do not use our services.
               </p>
@@ -47,9 +53,9 @@ export default function TermsOfServicePage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">Acceptance of Terms</h2>
               </div>
-              <div className="pl-13 text-muted-foreground space-y-3">
-                <p>By using HealthCare, you acknowledge that you:</p>
-                <ul className="list-disc list-inside space-y-1">
+              <div className="pl-13 text-muted-foreground flex flex-col gap-3">
+                <p>By using AURUM QMS, you acknowledge that you:</p>
+                <ul className="list-disc list-inside flex flex-col gap-1">
                   <li>Are at least 18 years of age or have parental/guardian consent</li>
                   <li>Have the legal capacity to enter into a binding agreement</li>
                   <li>Will use the platform in compliance with all applicable laws</li>
@@ -66,9 +72,9 @@ export default function TermsOfServicePage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">Description of Services</h2>
               </div>
-              <div className="pl-13 text-muted-foreground space-y-3">
-                <p>HealthCare provides a healthcare queue management system that enables:</p>
-                <ul className="list-disc list-inside space-y-1">
+              <div className="pl-13 text-muted-foreground flex flex-col gap-3">
+                <p>AURUM QMS provides a role-aware care and stay operations system that enables:</p>
+                <ul className="list-disc list-inside flex flex-col gap-1">
                   <li>Online appointment booking and management</li>
                   <li>Real-time queue tracking and notifications</li>
                   <li>Digital patient records management</li>
@@ -76,7 +82,7 @@ export default function TermsOfServicePage() {
                   <li>Administrative tools for healthcare facilities</li>
                 </ul>
                 <p className="mt-4 font-medium text-foreground">
-                  Note: HealthCare is a management platform and does not provide medical advice, 
+                  Note: AURUM QMS is a management platform and does not provide medical advice,
                   diagnosis, or treatment.
                 </p>
               </div>
@@ -90,9 +96,9 @@ export default function TermsOfServicePage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">User Accounts & Responsibilities</h2>
               </div>
-              <div className="pl-13 text-muted-foreground space-y-3">
+              <div className="pl-13 text-muted-foreground flex flex-col gap-3">
                 <p>When creating an account, you agree to:</p>
-                <ul className="list-disc list-inside space-y-1">
+                <ul className="list-disc list-inside flex flex-col gap-1">
                   <li>Provide accurate and complete information</li>
                   <li>Maintain the security of your account credentials</li>
                   <li>Notify us immediately of any unauthorized access</li>
@@ -110,9 +116,9 @@ export default function TermsOfServicePage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">Prohibited Activities</h2>
               </div>
-              <div className="pl-13 text-muted-foreground space-y-3">
+              <div className="pl-13 text-muted-foreground flex flex-col gap-3">
                 <p>You agree NOT to:</p>
-                <ul className="list-disc list-inside space-y-1">
+                <ul className="list-disc list-inside flex flex-col gap-1">
                   <li>Use the platform for any unlawful purpose</li>
                   <li>Impersonate another person or entity</li>
                   <li>Interfere with or disrupt the platform&apos;s operation</li>
@@ -133,8 +139,8 @@ export default function TermsOfServicePage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">Payment & Subscription</h2>
               </div>
-              <div className="pl-13 text-muted-foreground space-y-3">
-                <ul className="list-disc list-inside space-y-1">
+              <div className="pl-13 text-muted-foreground flex flex-col gap-3">
+                <ul className="list-disc list-inside flex flex-col gap-1">
                   <li>Subscription fees are billed in advance on a recurring basis</li>
                   <li>All fees are non-refundable unless otherwise stated</li>
                   <li>We reserve the right to modify pricing with 30 days notice</li>
@@ -152,16 +158,16 @@ export default function TermsOfServicePage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">Disclaimers & Limitations</h2>
               </div>
-              <div className="pl-13 text-muted-foreground space-y-3">
+              <div className="pl-13 text-muted-foreground flex flex-col gap-3">
                 <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4">
                   <p className="font-medium text-foreground mb-2">Medical Disclaimer</p>
                   <p className="text-sm">
-                    HealthCare is not a substitute for professional medical advice, diagnosis, or treatment. 
+                    AURUM QMS is not a substitute for professional medical advice, diagnosis, or treatment.
                     Always seek the advice of qualified healthcare providers with any questions regarding 
                     medical conditions.
                   </p>
                 </div>
-                <ul className="list-disc list-inside space-y-1 mt-4">
+                <ul className="list-disc list-inside flex flex-col gap-1 mt-4">
                   <li>Services are provided &quot;as is&quot; without warranties of any kind</li>
                   <li>We do not guarantee uninterrupted or error-free service</li>
                   <li>We are not liable for any indirect or consequential damages</li>
@@ -178,8 +184,8 @@ export default function TermsOfServicePage() {
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0">Termination</h2>
               </div>
-              <div className="pl-13 text-muted-foreground space-y-3">
-                <ul className="list-disc list-inside space-y-1">
+              <div className="pl-13 text-muted-foreground flex flex-col gap-3">
+                <ul className="list-disc list-inside flex flex-col gap-1">
                   <li>You may terminate your account at any time</li>
                   <li>We may suspend or terminate accounts for Terms violations</li>
                   <li>Upon termination, your right to use the platform ceases</li>
@@ -231,7 +237,7 @@ export default function TermsOfServicePage() {
                 <p className="mb-3">
                   If you have any questions about these Terms, please contact us:
                 </p>
-                <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                <div className="bg-muted/50 rounded-lg p-4 flex flex-col gap-2">
                   <p><strong>Email:</strong> <a href="mailto:legal@healthcare.com" className="text-primary hover:underline">legal@healthcare.com</a></p>
                   <p><strong>Support:</strong> <a href="mailto:support@healthcare.com" className="text-primary hover:underline">support@healthcare.com</a></p>
                 </div>
@@ -242,20 +248,21 @@ export default function TermsOfServicePage() {
             <section className="border-t pt-8">
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                 <p className="text-sm text-muted-foreground">
-                  By using HealthCare, you acknowledge that you have read, understood, and agree to 
+                  By using AURUM QMS, you acknowledge that you have read, understood, and agree to
                   be bound by these Terms of Service and our Privacy Policy.
                 </p>
               </div>
             </section>
           </div>
         </div>
+        </MotionPage>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/50 mt-12">
+      <footer className="border-t border-border bg-card mt-12">
         <div className="max-w-4xl mx-auto px-4 py-6 text-center">
           <p className="text-sm text-muted-foreground">
-            © 2026 HealthCare. All rights reserved.
+            © 2026 AURUM QMS. All rights reserved.
           </p>
         </div>
       </footer>

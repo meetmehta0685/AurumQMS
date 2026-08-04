@@ -3,26 +3,21 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Activity,
   ArrowLeft,
-  Bed,
-  ConciergeBell,
-  FlaskConical,
-  Heart,
-  Lock,
+  CheckCircle2,
+  LockKeyhole,
   Mail,
-  Pill,
-  Shield,
-  Sparkles,
-  Stethoscope,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
-import { isSelfServiceRole, resolveRoleHomeRoute } from "@/lib/auth/roles";
-import { createClient } from "@/lib/supabase/client";
-import { signInSchema, type SignInInput } from "@/lib/validations/auth";
+
+import { roleMeta, suiteMeta } from "@/components/layout/role-config";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,15 +36,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Spinner } from "@/components/ui/spinner";
+import { createClient } from "@/lib/supabase/client";
+import { isSelfServiceRole, resolveRoleHomeRoute } from "@/lib/auth/roles";
+import { signInSchema, type SignInInput } from "@/lib/validations/auth";
+import { cn } from "@/lib/utils";
+import type { UserRole } from "@/types";
 
-const demoAccounts = [
-  { role: "Patient", email: "patient@demo.com", icon: Heart, badge: "Teal" },
-  { role: "Doctor", email: "doctor@demo.com", icon: Stethoscope, badge: "Indigo" },
-  { role: "Admin", email: "admin@demo.com", icon: Shield, badge: "Purple" },
-  { role: "Lab", email: "lab@demo.com", icon: FlaskConical, badge: "Cyan" },
-  { role: "Pharma", email: "pharma@demo.com", icon: Pill, badge: "Amber" },
-  { role: "Guest", email: "guest@demo.com", icon: ConciergeBell, badge: "Rose" },
-  { role: "Staff", email: "staff@demo.com", icon: Bed, badge: "Emerald" },
+const demoRoles: UserRole[] = [
+  "patient",
+  "doctor",
+  "admin",
+  "lab",
+  "pharma",
+  "guest",
+  "staff",
 ];
 
 export default function LoginPage() {
@@ -59,16 +61,14 @@ export default function LoginPage() {
 
   const form = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
-  const fillDemoAccount = (email: string) => {
+  const fillDemoAccount = (role: UserRole) => {
+    const email = `${role}@demo.com`;
     form.setValue("email", email);
     form.setValue("password", "password123");
-    toast.info(`Filled credentials for ${email}`);
+    toast.info(`Filled credentials for ${roleMeta[role].shortLabel}`);
   };
 
   const onSubmit = async (data: SignInInput) => {
@@ -85,17 +85,17 @@ export default function LoginPage() {
       }
 
       if (!authData.user) {
-        toast.error("Login failed");
+        toast.error("Login failed. Try again.");
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("role")
         .eq("user_id", authData.user.id)
         .maybeSingle();
 
-      let resolvedRole = profile?.role;
+      let resolvedRole = profileData?.role;
 
       if (!resolvedRole) {
         const metadata = authData.user.user_metadata || {};
@@ -127,151 +127,158 @@ export default function LoginPage() {
         resolvedRole = createdProfile?.role || metadataRole;
       }
 
-      toast.success("Welcome back! Redirecting...");
+      toast.success("Welcome back. Opening your workspace.");
       router.push(resolveRoleHomeRoute(resolvedRole));
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("An unexpected error occurred");
+      toast.error("We could not start your session. Try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      {/* Background ambient lighting */}
-      <div className="absolute top-10 left-10 size-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 size-80 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none" />
-
-      <div className="relative w-full max-w-4xl space-y-6">
-        <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
-          <Link href="/">
-            <ArrowLeft className="size-4" />
-            Back to Home
+    <div className="min-h-screen bg-background">
+      <motion.header
+        className="border-b bg-surface"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Activity />
+            </span>
+            <span className="hidden text-sm font-semibold tracking-tight sm:block">
+              AURUM QMS
+            </span>
           </Link>
-        </Button>
-
-        <div className="grid gap-6 lg:grid-cols-12 lg:items-stretch">
-          {/* Left Side Info & Demo Shortcuts */}
-          <Card className="lg:col-span-5 glass-panel border-primary/20 flex flex-col justify-between p-6">
-            <div className="space-y-4">
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
-                <Activity className="size-6" />
-              </div>
-              <Badge variant="outline" className="text-xs font-semibold text-primary border-primary/30">
-                Enterprise Access
-              </Badge>
-              <h2 className="font-display text-2xl font-bold tracking-tight">
-                Aurum Enterprise Workspace
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Sign in to access your healthcare OPD queue manager, clinical workstation, laboratory portal, pharmacy dispensary, or hospitality suite.
-              </p>
-            </div>
-
-            <div className="space-y-3 pt-6 border-t border-border/40">
-              <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Sparkles className="size-3.5 text-primary" />
-                Quick Fill Demo Presets
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {demoAccounts.map((acc) => {
-                  const AccIcon = acc.icon;
-                  return (
-                    <button
-                      key={acc.role}
-                      type="button"
-                      onClick={() => fillDemoAccount(acc.email)}
-                      className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-background/50 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:border-primary transition-all hover:scale-105"
-                    >
-                      <AccIcon className="size-3 text-primary" />
-                      <span>{acc.role}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </Card>
-
-          {/* Right Side Form */}
-          <Card className="lg:col-span-7 glass-card border-border/60 shadow-2xl p-6 sm:p-8">
-            <CardHeader className="px-0 pt-0 pb-4">
-              <CardTitle className="font-display text-2xl font-bold">Sign In</CardTitle>
-              <CardDescription>
-                Enter your registered credentials to enter your workspace.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-0 pb-0">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2 text-xs font-semibold">
-                          <Mail className="size-3.5 text-primary" />
-                          Email Address
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="name@aurum.com"
-                            className="bg-background/50"
-                            {...field}
-                            disabled={isLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2 text-xs font-semibold">
-                          <Lock className="size-3.5 text-primary" />
-                          Password
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="••••••••"
-                            className="bg-background/50"
-                            {...field}
-                            disabled={isLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button type="submit" size="lg" className="w-full shadow-lg shadow-primary/20 gap-2 mt-2" disabled={isLoading}>
-                    {isLoading ? (
-                      <span className="flex items-center gap-2">
-                        <Activity className="size-4 animate-spin" /> Authenticating...
-                      </span>
-                    ) : (
-                      "Sign In to Workspace"
-                    )}
-                  </Button>
-                </form>
-              </Form>
-
-              <div className="mt-6 pt-4 border-t border-border/40 text-center text-xs text-muted-foreground">
-                Don&apos;t have an account yet?{" "}
-                <Link href="/register" className="font-semibold text-primary hover:underline">
-                  Create self-service account
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/">
+              <ArrowLeft data-icon="inline-start" />
+              Back to home
+            </Link>
+          </Button>
         </div>
-      </div>
+      </motion.header>
+
+      <motion.main
+        className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:py-16"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.38, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <section className="flex flex-col gap-6 pt-2">
+          <Badge variant="outline" className="w-fit gap-2 border-care/30 bg-care/10 text-care">
+            <ShieldCheck />
+            Role-aware access
+          </Badge>
+          <div className="flex flex-col gap-4">
+            <h1 className="max-w-xl font-display text-4xl tracking-[-0.03em] sm:text-5xl">
+              Enter the work that is yours.
+            </h1>
+            <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
+              Sign in to continue with the appointments, queues, records,
+              diagnostics, rooms, or guest requests assigned to your role.
+            </p>
+          </div>
+          <Alert className="max-w-xl bg-card">
+            <CheckCircle2 />
+            <AlertTitle>One account, one clear workspace</AlertTitle>
+            <AlertDescription>
+              Your role determines the navigation, status language, and actions
+              you see after sign-in.
+            </AlertDescription>
+          </Alert>
+          <div className="flex flex-col gap-3 pt-3">
+            <p className="text-sm font-medium">Demo shortcuts</p>
+            <div className="flex flex-wrap gap-2">
+              {demoRoles.map((role) => {
+                const item = roleMeta[role];
+                const Icon = item.icon;
+                const suite = suiteMeta[item.suite];
+                return (
+                  <Button
+                    key={role}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fillDemoAccount(role)}
+                    className="gap-2"
+                  >
+                    <Icon data-icon="inline-start" />
+                    {item.shortLabel}
+                    <span className={cn("size-1.5 rounded-full", suite.classes.solid)} />
+                  </Button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Demo shortcuts fill the form with the role email and the shared
+              demo password.
+            </p>
+          </div>
+        </section>
+
+        <Card className="border-border shadow-sm">
+          <CardHeader>
+            <CardTitle className="font-display text-3xl tracking-tight">Sign in</CardTitle>
+            <CardDescription>
+              Use your registered email and password to open your workspace.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Mail className="size-4 text-muted-foreground" />
+                        Email address
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="name@example.com" disabled={isLoading} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <LockKeyhole className="size-4 text-muted-foreground" />
+                        Password
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Enter your password" disabled={isLoading} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" size="lg" disabled={isLoading} className="mt-2 w-full">
+                  {isLoading ? <Spinner data-icon="inline-start" /> : <Activity data-icon="inline-start" />}
+                  {isLoading ? "Opening workspace…" : "Open workspace"}
+                </Button>
+              </form>
+            </Form>
+            <Separator className="my-6" />
+            <p className="text-center text-sm text-muted-foreground">
+              New here?{" "}
+              <Link href="/register" className="font-medium text-primary underline-offset-4 hover:underline">
+                Create a role account
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+      </motion.main>
     </div>
   );
 }

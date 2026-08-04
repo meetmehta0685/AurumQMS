@@ -2,243 +2,167 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import {
-  Activity,
-  CheckCircle2,
-  ChevronDown,
-  Clock,
-  ConciergeBell,
-  Heart,
-  LogOut,
-  User,
-  Stethoscope,
-  FlaskConical,
-  Pill,
-  Shield,
-  Bed,
-} from "lucide-react";
+import { motion } from "motion/react";
+import { Activity, ChevronDown, LogOut } from "lucide-react";
+
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  getRoleFromPathname,
+  roleMeta,
+  suiteMeta,
+} from "@/components/layout/role-config";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
+import type { UserRole } from "@/types";
 
 interface RoleHeaderProps {
-  currentRole:
-    | "patient"
-    | "doctor"
-    | "admin"
-    | "lab"
-    | "pharma"
-    | "guest"
-    | "staff";
+  currentRole: UserRole;
 }
 
-const roleConfigs = {
-  patient: {
-    label: "Patient Portal",
-    badge: "Patient",
-    color: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/30",
-    icon: Heart,
-    href: "/patient",
-  },
-  doctor: {
-    label: "Doctor Workstation",
-    badge: "Physician",
-    color: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
-    icon: Stethoscope,
-    href: "/doctor",
-  },
-  admin: {
-    label: "Admin Command Center",
-    badge: "System Admin",
-    color: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30",
-    icon: Shield,
-    href: "/admin",
-  },
-  lab: {
-    label: "Laboratory Portal",
-    badge: "Lab Technician",
-    color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30",
-    icon: FlaskConical,
-    href: "/lab",
-  },
-  pharma: {
-    label: "Pharmacy Portal",
-    badge: "Pharmacist",
-    color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
-    icon: Pill,
-    href: "/pharma",
-  },
-  guest: {
-    label: "Guest Suite",
-    badge: "Guest",
-    color: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30",
-    icon: ConciergeBell,
-    href: "/guest",
-  },
-  staff: {
-    label: "Property Staff",
-    badge: "Hospitality Staff",
-    color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
-    icon: Bed,
-    href: "/staff",
-  },
-};
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
 
 export function RoleHeader({ currentRole }: RoleHeaderProps) {
   const router = useRouter();
   const { profile, logout } = useAuth();
-  const [timeString, setTimeString] = useState<string>("");
-  const [dateString, setDateString] = useState<string>("");
-
-  useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      setTimeString(
-        now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      );
-      setDateString(
-        now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })
-      );
-    };
-    updateClock();
-    const interval = setInterval(updateClock, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const config = roleConfigs[currentRole] || roleConfigs.patient;
-  const RoleIcon = config.icon;
+  const meta = roleMeta[currentRole] ?? roleMeta[getRoleFromPathname("/")];
+  const suite = suiteMeta[meta.suite];
+  const displayName = profile?.full_name || "Workspace user";
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md supports-backdrop-filter:bg-background/60">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-        {/* Left: Brand Identity & Role Tag */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <Link
-            href="/"
-            className="group flex items-center gap-2.5 transition-opacity hover:opacity-90"
+    <motion.header
+      className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md supports-backdrop-filter:bg-background/75"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
+        <Link href={meta.home} className="flex min-w-0 items-center gap-3">
+          <motion.span
+            className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground"
+            whileHover={{ rotate: -4, scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.2 }}
           >
-            <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-md shadow-primary/20 transition-transform group-hover:scale-105">
-              <Activity className="size-5" />
-            </div>
-            <div className="hidden sm:block">
-              <div className="flex items-center gap-1.5">
-                <span className="font-display text-lg font-bold tracking-tight">
-                  Aurum
-                </span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  QMS & Stay
-                </span>
-              </div>
-            </div>
-          </Link>
+            <Activity />
+          </motion.span>
+          <span className="hidden min-w-0 flex-col sm:flex">
+            <span className="truncate text-sm font-semibold tracking-tight">
+              AURUM QMS
+            </span>
+            <span className="truncate text-xs text-muted-foreground">
+              {suite.label}
+            </span>
+          </span>
+        </Link>
 
-          <div className="h-6 w-px bg-border/60" />
+        <div className="h-5 w-px bg-border" />
 
-          {/* Role Pill */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 gap-2 rounded-full border border-border/50 px-3 text-xs font-medium transition-colors hover:bg-accent"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-2 px-2.5">
+              <Badge
+                variant="outline"
+                className={cn(
+                  "gap-1.5",
+                  suite.classes.border,
+                  suite.classes.soft,
+                )}
               >
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 border text-xs font-semibold ${config.color}`}>
-                  <RoleIcon className="size-3.5" />
-                  {config.badge}
-                </span>
-                <ChevronDown className="size-3 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 glass-card">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Switch Role Workspace (Demo)
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {Object.entries(roleConfigs).map(([key, item]) => {
+                <meta.icon />
+                {meta.shortLabel}
+              </Badge>
+              <ChevronDown className="text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-60">
+            <DropdownMenuLabel>Switch workspace</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {Object.entries(roleMeta).map(([key, item]) => {
                 const ItemIcon = item.icon;
-                const isActive = key === currentRole;
+                const itemSuite = suiteMeta[item.suite];
                 return (
                   <DropdownMenuItem
                     key={key}
-                    onClick={() => router.push(item.href)}
-                    className={`flex items-center justify-between cursor-pointer ${
-                      isActive ? "bg-accent font-semibold" : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <ItemIcon className="size-4 text-primary" />
-                      <span>{item.label}</span>
-                    </div>
-                    {isActive && (
-                      <CheckCircle2 className="size-3.5 text-primary" />
+                    onClick={() => router.push(item.home)}
+                    className={cn(
+                      "justify-between",
+                      key === currentRole && "bg-accent text-accent-foreground",
                     )}
+                  >
+                    <span className="flex items-center gap-2">
+                      <ItemIcon />
+                      {item.label}
+                    </span>
+                    <span className={cn("size-1.5 rounded-full", itemSuite.classes.solid)} />
                   </DropdownMenuItem>
                 );
               })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        {/* Center/Right: Clock, Notifications, Theme, Profile */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Live Clock Widget */}
-          <div className="hidden md:flex items-center gap-2 rounded-full border border-border/40 bg-muted/30 px-3 py-1 text-xs text-muted-foreground">
-            <Clock className="size-3.5 text-primary" />
-            <span className="font-mono font-medium text-foreground">{timeString}</span>
-            <span className="text-[10px] text-muted-foreground">{dateString}</span>
-          </div>
-
-          {/* Notifications */}
+        <div className="ml-auto flex items-center gap-1">
           <NotificationBell
             userId={profile?.id || profile?.user_id}
             userRole={profile?.role || currentRole}
           />
-
-          {/* Theme Toggle */}
           <ThemeToggle />
-
-          {/* Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                size="sm"
-                className="relative size-9 rounded-full border border-border/60 bg-muted/40 p-0 hover:bg-accent"
+                size="icon"
+                aria-label="Open account menu"
               >
-                <User className="size-4" />
+                <Avatar className="size-8 rounded-md">
+                  <AvatarFallback className="rounded-md bg-muted text-muted-foreground">
+                    {initials(displayName) || "Q"}
+                  </AvatarFallback>
+                </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 glass-card">
+            <DropdownMenuContent align="end" className="w-60">
               <DropdownMenuLabel>
-                <p className="text-sm font-semibold">
-                  {profile?.full_name || "User Account"}
-                </p>
-                <p className="text-xs text-muted-foreground capitalize">
-                  Role: {profile?.role || currentRole}
-                </p>
+                <span className="block truncate">{displayName}</span>
+                <span className="mt-1 block truncate text-xs font-normal text-muted-foreground">
+                  {profile?.email || meta.label}
+                </span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={logout}
-                className="cursor-pointer text-destructive focus:text-destructive"
-              >
-                <LogOut className="mr-2 size-4" />
-                Sign out
-              </DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }

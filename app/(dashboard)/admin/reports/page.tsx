@@ -236,7 +236,7 @@ export default function AdminReportsPage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-6xl mx-auto space-y-4">
+        <div className="max-w-6xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[...Array(8)].map((_, i) => (
@@ -472,7 +472,7 @@ export default function AdminReportsPage() {
                   No department data available
                 </p>
               ) : (
-                <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                   {departmentStats.map((dept, index) => (
                     <div
                       key={index}
@@ -509,14 +509,14 @@ export default function AdminReportsPage() {
                   No doctor data available
                 </p>
               ) : (
-                <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                   {doctorStats.map((doc, index) => (
                     <div
                       key={index}
                       className="flex items-center justify-between p-3 bg-muted rounded-lg"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-chart-4/10 rounded-full flex items-center justify-center text-chart-4 font-bold">
+                        <div className="size-8 bg-chart-4/10 rounded-full flex items-center justify-center text-chart-4 font-bold">
                           {index + 1}
                         </div>
                         <div>

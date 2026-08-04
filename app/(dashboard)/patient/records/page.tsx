@@ -123,7 +123,7 @@ export default function PatientRecordsPage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-64 w-full" />
         </div>
@@ -164,7 +164,7 @@ export default function PatientRecordsPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 {records.map((record) => (
                   <div
                     key={record.id}
@@ -229,7 +229,7 @@ export default function PatientRecordsPage() {
               </DialogDescription>
             </DialogHeader>
             {selectedRecord && (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground">Doctor</h4>
                   <p className="mt-1">
@@ -261,7 +261,7 @@ export default function PatientRecordsPage() {
                   ) : prescriptions.length === 0 ? (
                     <p className="text-muted-foreground text-sm">No prescriptions for this visit</p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       {prescriptions.map((rx) => (
                         <div key={rx.id} className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                           <p className="font-medium text-primary">{rx.medicine_name}</p>

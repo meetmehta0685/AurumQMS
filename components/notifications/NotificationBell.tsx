@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Bell,
   Calendar,
@@ -10,6 +11,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Popover,
   PopoverContent,
@@ -283,16 +286,38 @@ export function NotificationBell({ userId, userRole }: NotificationBellProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-5 h-5 text-muted-foreground" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+        >
+          <motion.span
+            className="inline-flex"
+            animate={unreadCount > 0 ? { rotate: [0, -8, 8, -4, 4, 0] } : { rotate: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
+            <Bell className="text-muted-foreground" />
+          </motion.span>
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full text-destructive-foreground text-xs flex items-center justify-center font-medium">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
+            <motion.span
+              key={unreadCount}
+              className="absolute -right-1 -top-1"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <Badge
+                variant="destructive"
+                className="size-5 justify-center p-0 text-[10px]"
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Badge>
+            </motion.span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-80 max-w-[calc(100vw-2rem)] p-0" align="end">
         <div className="p-4 border-b bg-muted">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-foreground">Notifications</h3>
@@ -312,7 +337,7 @@ export function NotificationBell({ userId, userRole }: NotificationBellProps) {
         <div className="max-h-80 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center text-muted-foreground">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+              <Spinner className="mx-auto" />
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
@@ -321,50 +346,59 @@ export function NotificationBell({ userId, userRole }: NotificationBellProps) {
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notification) => (
-                <div
+              <AnimatePresence initial={false}>
+                {notifications.map((notification) => (
+                <motion.div
                   key={notification.id}
-                  className={`p-3 hover:bg-muted cursor-pointer transition-colors ${
+                  layout
+                  className={`p-3 transition-colors hover:bg-muted ${
                     !notification.read ? "bg-primary/5" : ""
                   }`}
-                  onClick={() => markAsRead(notification.id)}
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
                 >
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 mt-0.5">
-                      {getIcon(notification.type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p
-                          className={`text-sm ${!notification.read ? "font-semibold text-foreground" : "font-medium text-foreground/80"}`}
+                  <div className="flex items-start gap-3">
+                    <button
+                      type="button"
+                      className="flex min-w-0 flex-1 gap-3 rounded-sm text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      onClick={() => markAsRead(notification.id)}
+                      aria-label={`Mark ${notification.title} as read`}
+                    >
+                      <span className="mt-0.5 shrink-0">
+                        {getIcon(notification.type)}
+                      </span>
+                      <span className="min-w-0">
+                        <span
+                          className={`block text-sm ${!notification.read ? "font-semibold text-foreground" : "font-medium text-foreground/80"}`}
                         >
                           {notification.title}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 -mr-2 text-muted-foreground hover:text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            clearNotification(notification.id);
-                          }}
-                        >
-                          <XCircle className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground/70 mt-1">
-                        {formatDistanceToNow(
-                          new Date(notification.created_at),
-                          { addSuffix: true },
-                        )}
-                      </p>
-                    </div>
+                        </span>
+                        <span className="mt-0.5 line-clamp-2 block text-xs text-muted-foreground">
+                          {notification.message}
+                        </span>
+                        <span className="mt-1 block text-xs text-muted-foreground/70">
+                          {formatDistanceToNow(
+                            new Date(notification.created_at),
+                            { addSuffix: true },
+                          )}
+                        </span>
+                      </span>
+                    </button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-6 shrink-0 text-muted-foreground hover:text-destructive"
+                      aria-label={`Dismiss ${notification.title}`}
+                      onClick={() => clearNotification(notification.id)}
+                    >
+                      <XCircle />
+                    </Button>
                   </div>
-                </div>
-              ))}
+                </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           )}
         </div>

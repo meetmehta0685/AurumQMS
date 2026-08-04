@@ -2,289 +2,347 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Activity,
   ArrowRight,
-  Bed,
-  CheckCircle2,
+  BedDouble,
+  Check,
   ChevronRight,
-  ConciergeBell,
-  FlaskConical,
-  Heart,
-  Pill,
-  Shield,
-  Sparkles,
-  Stethoscope,
+  HeartPulse,
 } from "lucide-react";
+
 import { ThemeToggle } from "@/components/theme-toggle";
+import { roleMeta, suiteMeta } from "@/components/layout/role-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
+import type { UserRole } from "@/types";
 
-const rolesData = [
-  {
-    id: "patient",
-    title: "Patient Portal",
-    badge: "Healthcare",
-    icon: Heart,
-    color: "from-teal-500/20 to-cyan-500/20 border-teal-500/30 text-teal-600 dark:text-teal-400",
-    href: "/patient",
-    description: "Realtime token queue tracking, appointment booking, digital prescriptions, lab results, and discharge summaries.",
-    features: ["Live Queue Token Status", "Doctor Appointments", "Digital Lab Reports", "Medication History"],
+const roleDetails: Record<
+  UserRole,
+  { title: string; description: string; features: string[] }
+> = {
+  patient: {
+    title: "Stay ahead of your care",
+    description:
+      "Appointments, live queue context, records, lab reports, prescriptions, and discharge notes in one focused workspace.",
+    features: ["Appointment timeline", "Live queue context", "Health record access", "Care follow-through"],
   },
-  {
-    id: "doctor",
-    title: "Doctor Workstation",
-    badge: "Clinical",
-    icon: Stethoscope,
-    color: "from-indigo-500/20 to-blue-500/20 border-indigo-500/30 text-indigo-600 dark:text-indigo-400",
-    href: "/doctor",
-    description: "Streamlined OPD consultation workflow, active queue caller, 1-click lab orders, e-prescribing, and schedule control.",
-    features: ["OPD Queue Manager", "Consultation Notes", "Direct E-Prescribe", "Lab Test Orders"],
+  doctor: {
+    title: "Move from queue to care",
+    description:
+      "Keep the clinical day visible: call the next patient, document the visit, order diagnostics, and close the loop.",
+    features: ["Queue control", "Consultation notes", "Diagnostic orders", "Prescription handoff"],
   },
-  {
-    id: "admin",
-    title: "Admin Command Center",
-    badge: "Management",
-    icon: Shield,
-    color: "from-purple-500/20 to-indigo-500/20 border-purple-500/30 text-purple-600 dark:text-purple-400",
-    href: "/admin",
-    description: "Executive visibility into hospital throughput, department allocations, doctor rosters, discharge approvals, and operational reports.",
-    features: ["Hospital Analytics", "Department Rosters", "Staff Management", "System Audit Logs"],
+  admin: {
+    title: "See the whole operation",
+    description:
+      "A clear command view for appointments, departments, providers, diagnostics, pharmacy, and operational reporting.",
+    features: ["System overview", "Provider directory", "Department flow", "Operational reports"],
   },
-  {
-    id: "lab",
-    title: "Laboratory Hub",
-    badge: "Diagnostics",
-    icon: FlaskConical,
-    color: "from-cyan-500/20 to-teal-500/20 border-cyan-500/30 text-cyan-600 dark:text-cyan-400",
-    href: "/lab",
-    description: "Order processing worklist, specimen tracking, priority test flags, and PDF diagnostic report publishing.",
-    features: ["Pending Test Queue", "Specimen Tagging", "PDF Result Upload", "Doctor Verification"],
+  lab: {
+    title: "Make diagnostics legible",
+    description:
+      "Process lab orders, record verified results, and publish the right report back into the care record.",
+    features: ["Order worklist", "Report publishing", "Doctor handoff", "Traceable status"],
   },
-  {
-    id: "pharma",
-    title: "Pharmacy Portal",
-    badge: "Dispensary",
-    icon: Pill,
-    color: "from-amber-500/20 to-yellow-500/20 border-amber-500/30 text-amber-600 dark:text-amber-400",
-    href: "/pharma",
-    description: "Real-time prescription fulfillment station, stock inventory tracking, medication dosage check-offs, and dispense logs.",
-    features: ["Rx Order Queue", "Medication Dispensing", "Low Stock Alerts", "Fulfillment Stats"],
+  pharma: {
+    title: "Keep medication moving",
+    description:
+      "Fulfill prescriptions with a focused dispense record for patient, dosage, quantity, and completion state.",
+    features: ["Prescription queue", "Dispense records", "Dosage context", "Fulfillment history"],
   },
-  {
-    id: "guest",
-    title: "Guest Portal",
-    badge: "Hospitality",
-    icon: ConciergeBell,
-    color: "from-rose-500/20 to-pink-500/20 border-rose-500/30 text-rose-600 dark:text-rose-400",
-    href: "/guest",
-    description: "Luxury guest interface for reservation tracking, amenity booking, room service requests, and digital concierge.",
-    features: ["Reservation Lookup", "Service Requests", "Room Readiness", "Guest Preferences"],
+  guest: {
+    title: "Make the stay feel easy",
+    description:
+      "Look up a reservation, share preferences, and send a service request without losing context.",
+    features: ["Reservation lookup", "Stay preferences", "Service requests", "Request status"],
   },
-  {
-    id: "staff",
-    title: "Property Staff",
-    badge: "Hospitality",
-    icon: Bed,
-    color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-600 dark:text-emerald-400",
-    href: "/staff",
-    description: "Operational housekeeping grid, guest arrival coordination, room maintenance status, and task dispatch board.",
-    features: ["Housekeeping Board", "Guest Arrivals", "Room Allocations", "Task Dispatch"],
+  staff: {
+    title: "Keep every room in rhythm",
+    description:
+      "Coordinate arrivals, room readiness, assignments, and service work from a single operational view.",
+    features: ["Room readiness", "Arrival coordination", "Room assignment", "Status handoff"],
   },
+};
+
+const roleOrder: UserRole[] = [
+  "patient",
+  "doctor",
+  "admin",
+  "lab",
+  "pharma",
+  "guest",
+  "staff",
 ];
 
-const stats = [
-  { label: "Role Workspaces", value: "7 Portals" },
-  { label: "Core Workflows", value: "100% Realtime" },
-  { label: "System Uptime", value: "99.99%" },
-  { label: "Response Speed", value: "< 50ms" },
+const suitePrinciples = [
+  {
+    suite: "care" as const,
+    icon: HeartPulse,
+    title: "Care Operations",
+    description:
+      "Clinical teams and patients share a dependable line from appointment to outcome.",
+    points: ["Appointments + queues", "Records + diagnostics", "Pharmacy + discharge"],
+  },
+  {
+    suite: "stay" as const,
+    icon: BedDouble,
+    title: "Stay Operations",
+    description:
+      "Guests and property teams stay aligned on rooms, arrivals, and requests.",
+    points: ["Reservations + preferences", "Room readiness", "Service requests"],
+  },
 ];
 
 export default function Home() {
-  const [selectedRole, setSelectedRole] = useState("patient");
-  const activeRoleData = rolesData.find((r) => r.id === selectedRole) || rolesData[0];
-  const RoleIcon = activeRoleData.icon;
+  const [selectedRole, setSelectedRole] = useState<UserRole>("patient");
+  const selectedMeta = roleMeta[selectedRole];
+  const selectedDetails = roleDetails[selectedRole];
+  const suite = suiteMeta[selectedMeta.suite];
+  const RoleIcon = selectedMeta.icon;
 
   return (
-    <div className="min-h-screen text-foreground bg-gradient-to-b from-background via-background/95 to-muted/20">
-      {/* Navigation Topbar */}
-      <nav className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/20">
-              <Activity className="size-5" />
-            </div>
-            <div>
-              <p className="font-display text-xl font-bold tracking-tight">Aurum System</p>
-              <p className="text-xs text-muted-foreground font-medium">Healthcare QMS & Hospitality Suite</p>
-            </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <motion.header
+        className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md supports-backdrop-filter:bg-background/75"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
+          <Link href="/" className="flex min-w-0 items-center gap-3">
+            <motion.span
+              className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground"
+              whileHover={{ rotate: -4, scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Activity />
+            </motion.span>
+            <span className="hidden min-w-0 flex-col sm:flex">
+              <span className="truncate text-sm font-semibold tracking-tight">
+                AURUM QMS
+              </span>
+              <span className="truncate text-xs text-muted-foreground">
+                Care + Stay
+              </span>
+            </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
             <Button asChild variant="ghost" size="sm">
               <Link href="/login">Sign in</Link>
             </Button>
-            <Button asChild size="sm" className="shadow-md shadow-primary/20">
+            <Button asChild size="sm">
               <Link href="/register">Create account</Link>
             </Button>
           </div>
         </div>
-      </nav>
+      </motion.header>
 
-      {/* Main Content */}
-      <main className="mx-auto flex max-w-7xl flex-col gap-12 px-4 py-10 sm:px-6 lg:py-16">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden rounded-3xl border border-border/50 glass-card p-6 sm:p-10 lg:p-12">
-          <div className="absolute -top-24 -right-24 size-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 size-96 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-
-          <div className="relative grid gap-8 lg:grid-cols-12 lg:items-center">
-            <div className="space-y-6 lg:col-span-7">
-              <Badge variant="outline" className="gap-2 px-3 py-1 text-xs font-semibold text-primary border-primary/30 bg-primary/5">
-                <Sparkles className="size-3.5 text-primary" />
-                Unified Enterprise Platform
-              </Badge>
-
-              <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-                Next-Gen <span className="gradient-text-primary">Quality Management</span> & Hospitality
+      <main className="mx-auto flex max-w-7xl flex-col gap-20 px-4 py-10 sm:px-6 lg:py-16">
+        <motion.section
+          className="grid items-start gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] xl:gap-16"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.44, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="flex flex-col gap-7 pt-2">
+            <Badge variant="outline" className="w-fit gap-2 border-care/30 bg-care/10 text-care">
+              <Activity />
+              AURUM QMS
+            </Badge>
+            <div className="flex flex-col gap-5">
+              <h1 className="max-w-3xl font-display text-5xl leading-[0.98] tracking-[-0.03em] sm:text-6xl lg:text-7xl">
+                One operational rail for care and stay.
               </h1>
-
-              <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
-                Seamlessly orchestrating clinical OPD queues, patient care workflows, lab diagnostics, pharmacy fulfillment, and luxury guest services in one ultra-sleek, role-tailored platform.
+              <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                Keep the next action visible across appointments, queues,
+                diagnostics, pharmacy, rooms, and guest service. AURUM QMS
+                gives every role the context it needs to move work
+                forward.
               </p>
-
-              <div className="flex flex-wrap gap-3 pt-2">
-                <Button asChild size="lg" className="shadow-lg shadow-primary/25 gap-2">
-                  <Link href="/login">
-                    Access System <ArrowRight className="size-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="border-border/60">
-                  <Link href="/register">Register Role Account</Link>
-                </Button>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild size="lg">
+                <Link href="/login">
+                  Open workspace
+                  <ArrowRight data-icon="inline-end" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/register">Create a role account</Link>
+              </Button>
+            </div>
+            <div className="grid max-w-xl grid-cols-2 gap-x-8 gap-y-5 border-t pt-6 sm:grid-cols-4">
+              <div className="flex flex-col gap-1">
+                <span className="font-display text-2xl">7</span>
+                <span className="text-xs text-muted-foreground">role workspaces</span>
               </div>
-
-              {/* Quick Stats Grid */}
-              <div className="grid grid-cols-2 gap-4 pt-6 sm:grid-cols-4 border-t border-border/40">
-                {stats.map((s) => (
-                  <div key={s.label} className="space-y-0.5">
-                    <p className="font-display text-xl font-bold text-foreground">{s.value}</p>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                  </div>
-                ))}
+              <div className="flex flex-col gap-1">
+                <span className="font-display text-2xl">2</span>
+                <span className="text-xs text-muted-foreground">operating suites</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-display text-2xl">1</span>
+                <span className="text-xs text-muted-foreground">shared status language</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-display text-2xl">24/7</span>
+                <span className="text-xs text-muted-foreground">web access</span>
               </div>
             </div>
+          </div>
 
-            {/* Interactive Role Preview Card */}
-            <div className="lg:col-span-5">
-              <Card className="glass-panel border-primary/20 shadow-xl overflow-hidden">
-                <CardHeader className="bg-muted/40 pb-4 border-b border-border/40">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Live Role Selector
+          <Card className="gap-0 overflow-hidden border-border py-0 shadow-sm">
+            <CardHeader className="gap-4 border-b bg-surface p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                  <CardTitle className="text-lg">Choose a workspace</CardTitle>
+                  <CardDescription>
+                    Every role gets the same clear operational grammar.
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary">Interactive</Badge>
+              </div>
+              <ToggleGroup
+                type="single"
+                value={selectedRole}
+                onValueChange={(value) => {
+                  if (value) setSelectedRole(value as UserRole);
+                }}
+                variant="outline"
+                spacing={1}
+                className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
+                aria-label="Choose a role workspace"
+              >
+                {roleOrder.map((role) => {
+                  const item = roleMeta[role];
+                  const Icon = item.icon;
+                  return (
+                    <ToggleGroupItem
+                      key={role}
+                      value={role}
+                      aria-label={item.label}
+                      className="h-auto justify-start gap-2 px-3 py-2.5 text-left"
+                    >
+                      <Icon />
+                      <span className="truncate">{item.shortLabel}</span>
+                    </ToggleGroupItem>
+                  );
+                })}
+              </ToggleGroup>
+            </CardHeader>
+            <CardContent className="p-6">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={selectedRole}
+                  className="flex flex-col gap-6"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-md", suite.classes.soft)}>
+                      <RoleIcon />
                     </span>
-                    <Badge variant="secondary" className="text-[10px]">Interactive</Badge>
-                  </div>
-                  <CardTitle className="text-lg font-bold flex items-center gap-2 pt-1">
-                    <RoleIcon className="size-5 text-primary" />
-                    {activeRoleData.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 pt-4">
-                  <p className="text-sm text-muted-foreground">
-                    {activeRoleData.description}
-                  </p>
-
-                  <div className="space-y-2">
-                    <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Key Capabilities</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {activeRoleData.features.map((feat) => (
-                        <div key={feat} className="flex items-center gap-2 text-xs text-muted-foreground rounded-lg border border-border/40 bg-background/50 p-2">
-                          <CheckCircle2 className="size-3.5 text-primary shrink-0" />
-                          <span>{feat}</span>
-                        </div>
-                      ))}
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <Badge variant="outline" className={cn("w-fit", suite.classes.border, suite.classes.soft)}>
+                        {suite.label}
+                      </Badge>
+                      <h2 className="text-xl font-semibold tracking-tight">{selectedDetails.title}</h2>
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        {selectedDetails.description}
+                      </p>
                     </div>
                   </div>
-
-                  <Button asChild className="w-full gap-2 mt-2">
-                    <Link href={activeRoleData.href}>
-                      Launch {activeRoleData.title}
-                      <ChevronRight className="size-4" />
+                  <Separator />
+                  <ul className="grid gap-3 sm:grid-cols-2">
+                    {selectedDetails.features.map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-sm">
+                        <Check className="text-care" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button asChild className="w-full">
+                    <Link href={selectedMeta.home}>
+                      Explore {selectedMeta.shortLabel} workspace
+                      <ChevronRight data-icon="inline-end" />
                     </Link>
                   </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
+                </motion.div>
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.section>
 
-        {/* Roles Explorer Section */}
-        <section className="space-y-6">
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <Badge variant="outline" className="text-xs">Role Workspaces</Badge>
-            <h2 className="font-display text-3xl font-bold">Tailored Experience for Every User Role</h2>
-            <p className="text-sm text-muted-foreground">
-              Select any role below to explore its specialized workspace interface and capabilities.
+        <section className="flex flex-col gap-8">
+          <div className="flex max-w-2xl flex-col gap-3">
+            <p className="text-sm font-medium text-care">Built around the work</p>
+            <h2 className="font-display text-4xl tracking-[-0.02em] sm:text-5xl">
+              Clear roles. Shared rhythm.
+            </h2>
+            <p className="text-base leading-relaxed text-muted-foreground">
+              Clinical and hospitality teams do different work, but both need
+              the same thing: a trustworthy view of what is ready, what is
+              waiting, and what happens next.
             </p>
           </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {rolesData.map((role) => {
-              const Icon = role.icon;
-              const isSelected = selectedRole === role.id;
+          <div className="grid gap-4 md:grid-cols-2">
+            {suitePrinciples.map((item) => {
+              const Icon = item.icon;
+              const itemSuite = suiteMeta[item.suite];
               return (
-                <div
-                  key={role.id}
-                  onClick={() => setSelectedRole(role.id)}
-                  className={`group relative cursor-pointer rounded-2xl border p-5 transition-all duration-300 ${
-                    isSelected
-                      ? `border-primary bg-accent/30 shadow-lg glow-teal scale-[1.02]`
-                      : "border-border/60 glass-card hover:border-primary/50 hover:bg-accent/10"
-                  }`}
-                >
-                  <div className="flex items-center justify-between pb-3">
-                    <div className={`flex size-10 items-center justify-center rounded-xl bg-gradient-to-br ${role.color}`}>
-                      <Icon className="size-5" />
-                    </div>
-                    <Badge variant="outline" className="text-[10px]">
-                      {role.badge}
-                    </Badge>
-                  </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors">
-                    {role.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                    {role.description}
-                  </p>
-                  <div className="mt-4 flex items-center gap-1 text-xs font-medium text-primary">
-                    <span>Explore Portal</span>
-                    <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </div>
+                <Card key={item.suite} className="border-border shadow-sm">
+                  <CardHeader>
+                    <span className={cn("flex size-10 items-center justify-center rounded-md", itemSuite.classes.soft)}>
+                      <Icon />
+                    </span>
+                    <CardTitle className="pt-2">{item.title}</CardTitle>
+                    <CardDescription className="max-w-lg leading-relaxed">
+                      {item.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="grid gap-3 text-sm text-muted-foreground">
+                      {item.points.map((point) => (
+                        <li key={point} className="flex items-center gap-2">
+                          <span className={cn("size-1.5 rounded-full", itemSuite.classes.solid)} />
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40 bg-background/50 py-8 text-center text-xs text-muted-foreground">
-        <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="border-t bg-surface">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-7 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex items-center gap-2">
-            <Activity className="size-4 text-primary" />
-            <span className="font-semibold text-foreground">AurumQMS & AurumStay</span>
-            <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
+            <Activity className="text-care" />
+            <span className="font-medium text-foreground">AURUM QMS</span>
+            <span>© {new Date().getFullYear()}</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-foreground">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground">Terms</Link>
           </div>
         </div>
       </footer>

@@ -128,7 +128,7 @@ export default function DoctorDischargePage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-5xl mx-auto space-y-4">
+        <div className="max-w-5xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-72 w-full" />
         </div>
@@ -138,7 +138,7 @@ export default function DoctorDischargePage() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <Link href="/doctor">
             <Button variant="ghost" size="sm">
@@ -180,7 +180,7 @@ export default function DoctorDischargePage() {
               {selectedSummary && <Badge variant={selectedSummary.discharge_status === 'discharged' ? 'default' : 'outline'}>{selectedSummary.discharge_status}</Badge>}
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="flex flex-col gap-4">
             <Textarea
               value={summaryText}
               onChange={(e) => setSummaryText(e.target.value)}

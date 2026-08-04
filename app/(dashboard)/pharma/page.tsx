@@ -3,18 +3,11 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import Link from "next/link";
 import {
   Pill,
-  Plus,
-  Clock,
-  User,
-  Stethoscope,
-  CheckCircle2,
   AlertCircle,
   PackageCheck,
   PackagePlus,
-  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +29,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { RoleHeader } from "@/components/layout/RoleHeader";
 
 interface PatientProfile {
   id: string;
@@ -201,8 +193,7 @@ export default function PharmaPortalPage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background">
-        <RoleHeader currentRole="pharma" />
-        <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <div className="max-w-7xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-12 w-64 rounded-xl" />
           <Skeleton className="h-72 w-full rounded-2xl" />
         </div>
@@ -213,7 +204,7 @@ export default function PharmaPortalPage() {
   if (!profile || profile.role !== "pharma") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md glass-card p-6 text-center space-y-4">
+        <Card className="w-full max-w-md bg-card p-6 text-center flex flex-col gap-4">
           <div className="size-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto">
             <AlertCircle className="size-8" />
           </div>
@@ -230,19 +221,16 @@ export default function PharmaPortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+    <div className="min-h-screen bg-background pb-12">
       {/* Unified Top Navigation */}
-      <RoleHeader currentRole="pharma" />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8">
         {/* Pharma Hero Banner */}
-        <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 glass-card p-6 sm:p-8 glow-amber">
-          <div className="absolute -top-16 -right-16 size-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="relative overflow-hidden rounded-xl border border-warning/30 bg-card p-6 sm:p-8 shadow-sm">
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 gap-1.5">
+                <Badge variant="outline" className="border-warning/40 text-warning bg-warning/10 gap-1.5">
                   <Pill className="size-3.5" />
                   Pharmacy Dispensary
                 </Badge>
@@ -256,14 +244,14 @@ export default function PharmaPortalPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
-              <div className="size-12 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4">
+              <div className="size-12 rounded-xl bg-warning/20 text-warning flex items-center justify-center">
                 <PackageCheck className="size-6" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispensary Log</p>
                 <p className="font-display text-xl font-bold text-foreground">{items.length} Fulfilled</p>
-                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Ready for Pick-up</span>
+                <span className="text-xs text-warning font-medium">Ready for Pick-up</span>
               </div>
             </div>
           </div>
@@ -272,20 +260,20 @@ export default function PharmaPortalPage() {
         {/* Form & Log Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Create Dispense Card */}
-          <Card className="lg:col-span-6 glass-card border-border/60">
-            <CardHeader className="border-b border-border/40 pb-4">
+          <Card className="lg:col-span-6 bg-card border-border">
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <PackagePlus className="size-5 text-amber-500" />
+                <PackagePlus className="size-5 text-warning" />
                 Record Medication Dispense
               </CardTitle>
               <CardDescription>Log a new prescription fulfillment for a patient</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4">
+            <CardContent className="pt-6 flex flex-col gap-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">Select Patient</label>
                   <Select value={patientId} onValueChange={setPatientId}>
-                    <SelectTrigger className="bg-background/50">
+                    <SelectTrigger className="bg-background">
                       <SelectValue placeholder="Choose patient..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -298,10 +286,10 @@ export default function PharmaPortalPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">Prescribing Physician</label>
                   <Select value={doctorId} onValueChange={setDoctorId}>
-                    <SelectTrigger className="bg-background/50">
+                    <SelectTrigger className="bg-background">
                       <SelectValue placeholder="Choose doctor..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -316,68 +304,68 @@ export default function PharmaPortalPage() {
               </div>
 
               {selectedPatient && (
-                <div className="p-3 rounded-xl border border-amber-500/30 bg-amber-500/5 text-xs space-y-1">
-                  <p className="font-semibold text-amber-600 dark:text-amber-400">Patient Details:</p>
+                <div className="p-3 rounded-xl border border-warning/30 bg-warning/5 text-xs flex flex-col gap-1">
+                  <p className="font-semibold text-warning">Patient Details:</p>
                   <p className="text-foreground">{selectedPatient.full_name} • {selectedPatient.email}</p>
                 </div>
               )}
 
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Medicine Name & Strength</label>
                 <Input
                   value={medicineName}
                   onChange={(e) => setMedicineName(e.target.value)}
                   placeholder="e.g. Amoxicillin 500mg"
-                  className="bg-background/50"
+                  className="bg-background"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">Dosage</label>
                   <Input
                     value={dosage}
                     onChange={(e) => setDosage(e.target.value)}
                     placeholder="1 tablet"
-                    className="bg-background/50"
+                    className="bg-background"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">Frequency</label>
                   <Input
                     value={frequency}
                     onChange={(e) => setFrequency(e.target.value)}
                     placeholder="TDS (3x/day)"
-                    className="bg-background/50"
+                    className="bg-background"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">Duration</label>
                   <Input
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     placeholder="5 Days"
-                    className="bg-background/50"
+                    className="bg-background"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">Quantity Dispensed</label>
                   <Input
                     type="number"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     placeholder="15"
-                    className="bg-background/50"
+                    className="bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">Fulfillment Status</label>
                   <Select value={status} onValueChange={(val: any) => setStatus(val)}>
-                    <SelectTrigger className="bg-background/50">
+                    <SelectTrigger className="bg-background">
                       <SelectValue placeholder="Choose status..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -389,20 +377,20 @@ export default function PharmaPortalPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Pharmacist Notes</label>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Take after meals. Storage notes..."
-                  className="bg-background/50 min-h-16"
+                  className="bg-background min-h-16"
                 />
               </div>
 
               <Button
                 onClick={createDispense}
                 disabled={saving || !patientId || !doctorId || !medicineName || !dosage || !frequency || !duration}
-                className="w-full gap-2 shadow-lg shadow-amber-500/20"
+                className="w-full gap-2 shadow-sm"
               >
                 {saving ? "Saving Dispense..." : "Confirm & Save Dispense Record"}
               </Button>
@@ -410,10 +398,10 @@ export default function PharmaPortalPage() {
           </Card>
 
           {/* Fulfillment Dispense Log */}
-          <Card className="lg:col-span-6 glass-card border-border/60">
-            <CardHeader className="border-b border-border/40 pb-4">
+          <Card className="lg:col-span-6 bg-card border-border">
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Pill className="size-5 text-amber-500" />
+                <Pill className="size-5 text-warning" />
                 Medication Dispense Log
               </CardTitle>
               <CardDescription>Real-time pharmacy fulfillment activity</CardDescription>
@@ -422,14 +410,14 @@ export default function PharmaPortalPage() {
               {items.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">No pharmacy dispenses recorded yet.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3">
                   {items.map((i) => (
                     <div
                       key={i.id}
-                      className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-background/50 hover:border-amber-500/40 transition-all gap-4"
+                      className="flex items-center justify-between p-4 rounded-2xl border border-border bg-background hover:border-warning/40 transition-all gap-4"
                     >
                       <div className="flex items-center gap-3.5">
-                        <div className="size-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <div className="size-10 rounded-xl bg-warning/15 text-warning flex items-center justify-center shrink-0">
                           <Pill className="size-5" />
                         </div>
                         <div>
@@ -446,8 +434,8 @@ export default function PharmaPortalPage() {
                         variant="outline"
                         className={`capitalize ${
                           i.dispense_status === "dispensed"
-                            ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
-                            : "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                            ? "border-stay/30 text-stay bg-stay/10"
+                            : "border-warning/30 text-warning bg-warning/10"
                         }`}
                       >
                         {i.dispense_status}

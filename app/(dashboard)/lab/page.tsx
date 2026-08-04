@@ -3,19 +3,12 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import Link from "next/link";
 import {
   FlaskConical,
-  FileText,
   Plus,
   Upload,
-  Clock,
-  User,
-  Stethoscope,
-  CheckCircle2,
   AlertCircle,
   FileCheck,
-  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +30,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { RoleHeader } from "@/components/layout/RoleHeader";
 
 interface LabOrder {
   id: string;
@@ -237,8 +229,7 @@ export default function LabPortalPage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background">
-        <RoleHeader currentRole="lab" />
-        <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <div className="max-w-7xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-12 w-64 rounded-xl" />
           <Skeleton className="h-72 w-full rounded-2xl" />
         </div>
@@ -249,7 +240,7 @@ export default function LabPortalPage() {
   if (!profile || profile.role !== "lab") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md glass-card p-6 text-center space-y-4">
+        <Card className="w-full max-w-md bg-card p-6 text-center flex flex-col gap-4">
           <div className="size-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto">
             <AlertCircle className="size-8" />
           </div>
@@ -266,19 +257,16 @@ export default function LabPortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+    <div className="min-h-screen bg-background pb-12">
       {/* Unified Top Navigation */}
-      <RoleHeader currentRole="lab" />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8">
         {/* Lab Hero Banner */}
-        <div className="relative overflow-hidden rounded-3xl border border-cyan-500/30 glass-card p-6 sm:p-8 glow-teal">
-          <div className="absolute -top-16 -right-16 size-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="relative overflow-hidden rounded-xl border border-care/30 bg-card p-6 sm:p-8 shadow-sm">
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-cyan-500/40 text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 gap-1.5">
+                <Badge variant="outline" className="border-care/40 text-care bg-care/10 gap-1.5">
                   <FlaskConical className="size-3.5" />
                   Diagnostic Workstation
                 </Badge>
@@ -292,14 +280,14 @@ export default function LabPortalPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
-              <div className="size-12 rounded-xl bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4">
+              <div className="size-12 rounded-xl bg-care/20 text-care flex items-center justify-center">
                 <FileCheck className="size-6" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Orders</p>
                 <p className="font-display text-xl font-bold text-foreground">{orders.length} Records</p>
-                <span className="text-xs text-cyan-600 dark:text-cyan-400 font-medium">Ready for Processing</span>
+                <span className="text-xs text-care font-medium">Ready for Processing</span>
               </div>
             </div>
           </div>
@@ -308,19 +296,19 @@ export default function LabPortalPage() {
         {/* Action Forms Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Create Order Card */}
-          <Card className="glass-card border-border/60">
-            <CardHeader className="border-b border-border/40 pb-4">
+          <Card className="bg-card border-border">
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Plus className="size-5 text-cyan-500" />
+                <Plus className="size-5 text-care" />
                 Register New Lab Order
               </CardTitle>
               <CardDescription>Initiate specimen testing for a patient</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4">
-              <div className="space-y-1.5">
+            <CardContent className="pt-6 flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Select Patient</label>
                 <Select value={patientId} onValueChange={setPatientId}>
-                  <SelectTrigger className="bg-background/50">
+                  <SelectTrigger className="bg-background">
                     <SelectValue placeholder="Choose patient record..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -333,10 +321,10 @@ export default function LabPortalPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Ordering Doctor</label>
                 <Select value={doctorId} onValueChange={setDoctorId}>
-                  <SelectTrigger className="bg-background/50">
+                  <SelectTrigger className="bg-background">
                     <SelectValue placeholder="Choose physician..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -350,37 +338,37 @@ export default function LabPortalPage() {
               </div>
 
               {selectedPatient && (
-                <div className="p-3 rounded-xl border border-cyan-500/30 bg-cyan-500/5 text-xs space-y-1">
-                  <p className="font-semibold text-cyan-600 dark:text-cyan-400">Patient File Selected:</p>
+                <div className="p-3 rounded-xl border border-care/30 bg-care/5 text-xs flex flex-col gap-1">
+                  <p className="font-semibold text-care">Patient File Selected:</p>
                   <p className="text-foreground">{selectedPatient.full_name} • {selectedPatient.email}</p>
                   <p className="text-muted-foreground">Phone: {selectedPatient.phone || "N/A"}</p>
                 </div>
               )}
 
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Test Name / Panel</label>
                 <Input
                   value={testName}
                   onChange={(e) => setTestName(e.target.value)}
                   placeholder="e.g. Complete Blood Count (CBC) / Lipid Profile"
-                  className="bg-background/50"
+                  className="bg-background"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Special Instructions / Fasting Notes</label>
                 <Textarea
                   value={instructions}
                   onChange={(e) => setInstructions(e.target.value)}
                   placeholder="Fasting 12 hours required, fasting blood sugar..."
-                  className="bg-background/50 min-h-20"
+                  className="bg-background min-h-20"
                 />
               </div>
 
               <Button
                 onClick={createOrder}
                 disabled={savingOrder || !patientId || !doctorId || !testName.trim()}
-                className="w-full gap-2 shadow-lg shadow-cyan-500/20"
+                className="w-full gap-2 shadow-sm"
               >
                 {savingOrder ? "Registering Order..." : "Create Specimen Order"}
               </Button>
@@ -388,19 +376,19 @@ export default function LabPortalPage() {
           </Card>
 
           {/* Upload Report Card */}
-          <Card className="glass-card border-border/60">
-            <CardHeader className="border-b border-border/40 pb-4">
+          <Card className="bg-card border-border">
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Upload className="size-5 text-teal-500" />
+                <Upload className="size-5 text-care" />
                 Publish Diagnostic Test Result
               </CardTitle>
               <CardDescription>Upload report results for pending orders</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4">
-              <div className="space-y-1.5">
+            <CardContent className="pt-6 flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Select Active Order</label>
                 <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
-                  <SelectTrigger className="bg-background/50">
+                  <SelectTrigger className="bg-background">
                     <SelectValue placeholder="Choose order to report..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -413,40 +401,40 @@ export default function LabPortalPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Report Title</label>
                 <Input
                   value={reportTitle}
                   onChange={(e) => setReportTitle(e.target.value)}
                   placeholder="e.g. Diagnostic Report - Normal Range"
-                  className="bg-background/50"
+                  className="bg-background"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">PDF Document URL (Optional)</label>
                 <Input
                   value={reportUrl}
                   onChange={(e) => setReportUrl(e.target.value)}
                   placeholder="https://storage.aurum.com/reports/123.pdf"
-                  className="bg-background/50"
+                  className="bg-background"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Result Details & Clinical Observations</label>
                 <Textarea
                   value={reportText}
                   onChange={(e) => setReportText(e.target.value)}
                   placeholder="Hemoglobin: 14.2 g/dL, WBC: 6,800 /mcL, Platelets: 250,000 /mcL..."
-                  className="bg-background/50 min-h-20"
+                  className="bg-background min-h-20"
                 />
               </div>
 
               <Button
                 onClick={uploadReport}
                 disabled={savingReport || !selectedOrderId || !reportTitle.trim()}
-                className="w-full gap-2 shadow-lg shadow-teal-500/20"
+                className="w-full gap-2 shadow-sm"
               >
                 {savingReport ? "Publishing Report..." : "Publish Diagnostic Report"}
               </Button>
@@ -455,10 +443,10 @@ export default function LabPortalPage() {
         </div>
 
         {/* Recent Orders Table List */}
-        <Card className="glass-card border-border/60">
-          <CardHeader className="border-b border-border/40 pb-4">
+        <Card className="bg-card border-border">
+          <CardHeader className="border-b border-border pb-4">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <FlaskConical className="size-5 text-cyan-500" />
+              <FlaskConical className="size-5 text-care" />
               Laboratory Order Worklist
             </CardTitle>
             <CardDescription>Real-time status tracking for all test requests</CardDescription>
@@ -467,19 +455,19 @@ export default function LabPortalPage() {
             {orders.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">No lab orders found in system.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {orders.map((o) => (
                   <div
                     key={o.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-border/50 bg-background/50 hover:border-cyan-500/40 transition-all gap-4"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-border bg-background hover:border-care/40 transition-all gap-4"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="size-10 rounded-xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+                      <div className="size-10 rounded-xl bg-care/15 text-care flex items-center justify-center shrink-0">
                         <FlaskConical className="size-5" />
                       </div>
                       <div>
                         <p className="font-semibold text-foreground">
-                          {o.patient?.full_name || "Patient Record"} • <span className="text-cyan-600 dark:text-cyan-400">{o.test_name}</span>
+                          {o.patient?.full_name || "Patient Record"} • <span className="text-care">{o.test_name}</span>
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Ordering Doctor: Dr. {o.doctor?.profile?.full_name || "Specialist"}
@@ -494,8 +482,8 @@ export default function LabPortalPage() {
                       variant="outline"
                       className={`capitalize self-start sm:self-auto ${
                         o.status === "reported"
-                          ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
-                          : "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                          ? "border-stay/30 text-stay bg-stay/10"
+                          : "border-warning/30 text-warning bg-warning/10"
                       }`}
                     >
                       {o.status}

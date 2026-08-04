@@ -191,12 +191,12 @@ export default function PatientQueuePage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
+        <header className="bg-card border-b border-border sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-4 py-4">
             <Skeleton className="h-10 w-48" />
           </div>
         </header>
-        <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <div className="max-w-4xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-64 w-full rounded-xl" />
         </div>
@@ -207,7 +207,7 @@ export default function PatientQueuePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Header */}
-      <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50 shadow-sm">
+      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -263,7 +263,7 @@ export default function PatientQueuePage() {
         </div>
 
         {todayAppointments.length === 0 ? (
-          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-xl bg-card">
             <CardContent className="py-16 text-center">
               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-10 h-10 text-muted-foreground" />
@@ -282,7 +282,7 @@ export default function PatientQueuePage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6">
             {todayAppointments.map((apt) => {
               const position = queuePositions.find(
                 (p) => p.appointmentId === apt.id,
@@ -291,7 +291,7 @@ export default function PatientQueuePage() {
               return (
                 <Card
                   key={apt.id}
-                  className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden"
+                  className="border-0 shadow-xl bg-card overflow-hidden"
                 >
                   <CardHeader className="bg-accent border-b border-border">
                     <div className="flex items-center justify-between">
@@ -321,7 +321,7 @@ export default function PatientQueuePage() {
                   </CardHeader>
                   <CardContent className="p-6">
                     {position ? (
-                      <div className="space-y-6">
+                      <div className="flex flex-col gap-6">
                         {/* Token Display */}
                         <div className="text-center">
                           <p className="text-sm text-muted-foreground mb-2">

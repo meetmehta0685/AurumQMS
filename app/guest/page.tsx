@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,12 +29,8 @@ import {
   Bell,
   CalendarCheck,
   ConciergeBell,
-  MapPin,
   Sparkles,
   Search,
-  CheckCircle2,
-  Clock,
-  Bed,
 } from "lucide-react";
 import { RoleHeader } from "@/components/layout/RoleHeader";
 
@@ -219,19 +215,22 @@ export default function GuestPortalPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+    <div className="min-h-screen bg-background pb-12">
       {/* Unified Top Navigation */}
       <RoleHeader currentRole="guest" />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+      <motion.main
+        className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.38, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+      >
         {/* Luxury Hospitality Hero */}
-        <div className="relative overflow-hidden rounded-3xl border border-rose-500/30 glass-card p-6 sm:p-8 glow-rose">
-          <div className="absolute -top-16 -right-16 size-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="relative overflow-hidden rounded-xl border border-stay/30 bg-card p-6 sm:p-8 shadow-sm">
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-rose-500/40 text-rose-600 dark:text-rose-400 bg-rose-500/10 gap-1.5">
+                <Badge variant="outline" className="border-stay/40 text-stay bg-stay/10 gap-1.5">
                   <ConciergeBell className="size-3.5" />
                   Luxury Guest Suite
                 </Badge>
@@ -245,58 +244,58 @@ export default function GuestPortalPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
-              <div className="size-12 rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4">
+              <div className="size-12 rounded-xl bg-stay/20 text-stay flex items-center justify-center">
                 <Sparkles className="size-6" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Guest Services</p>
                 <p className="font-display text-lg font-bold text-foreground">24/7 Digital Concierge</p>
-                <span className="text-xs text-rose-600 dark:text-rose-400 font-medium">Ready at your service</span>
+                <span className="text-xs text-stay font-medium">Ready at your service</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Reservation Lookup Section */}
-        <Card className="glass-card border-border/60">
-          <CardHeader className="border-b border-border/40 pb-4">
+        <Card className="bg-card border-border">
+          <CardHeader className="border-b border-border pb-4">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Search className="size-5 text-rose-500" />
+              <Search className="size-5 text-stay" />
               Lookup Reservation
             </CardTitle>
             <CardDescription>Enter your reservation code and registered last name</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handleLookup} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label className="text-xs font-semibold">Reservation Code</Label>
                 <Input
                   value={reservationCode}
                   onChange={(e) => setReservationCode(e.target.value)}
                   placeholder="e.g. RES-1001"
-                  className="bg-background/50"
+                  className="bg-background"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label className="text-xs font-semibold">Guest Last Name</Label>
                 <Input
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="e.g. Smith"
-                  className="bg-background/50"
+                  className="bg-background"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label className="text-xs font-semibold">Arrival Date (Optional)</Label>
                 <Input
                   type="date"
                   value={arrivalDate}
                   onChange={(e) => setArrivalDate(e.target.value)}
-                  className="bg-background/50"
+                  className="bg-background"
                 />
               </div>
-              <Button type="submit" disabled={isLoading} className="sm:col-span-3 gap-2 shadow-lg shadow-rose-500/20">
+              <Button type="submit" disabled={isLoading} className="sm:col-span-3 gap-2 shadow-sm">
                 {isLoading ? "Searching Reservation..." : "Lookup Reservation File"}
               </Button>
             </form>
@@ -307,14 +306,14 @@ export default function GuestPortalPage() {
         {reservation && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Stay Preferences Card */}
-            <Card className="glass-card border-border/60">
-              <CardHeader className="border-b border-border/40 pb-4">
+            <Card className="bg-card border-border">
+              <CardHeader className="border-b border-border pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-bold flex items-center gap-2">
-                    <CalendarCheck className="size-5 text-rose-500" />
+                    <CalendarCheck className="size-5 text-stay" />
                     Reservation #{reservation.reservation_code}
                   </CardTitle>
-                  <Badge variant="outline" className="border-rose-500/30 text-rose-600 bg-rose-500/10 capitalize">
+                  <Badge variant="outline" className="border-stay/30 text-stay bg-stay/10 capitalize">
                     {reservation.status}
                   </Badge>
                 </div>
@@ -322,12 +321,12 @@ export default function GuestPortalPage() {
                   Arrival: {reservation.arrival_date} • Departure: {reservation.departure_date}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-6 space-y-4">
-                <form onSubmit={handleUpdatePreferences} className="space-y-4">
-                  <div className="space-y-1.5">
+              <CardContent className="pt-6 flex flex-col gap-4">
+                <form onSubmit={handleUpdatePreferences} className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-1.5">
                     <Label className="text-xs font-semibold">Preferred Room Category</Label>
                     <Select value={roomTypeId} onValueChange={setRoomTypeId}>
-                      <SelectTrigger className="bg-background/50">
+                      <SelectTrigger className="bg-background">
                         <SelectValue placeholder="Select room type..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -340,25 +339,25 @@ export default function GuestPortalPage() {
                     </Select>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-xl border border-border/50 p-3 bg-background/40">
-                    <div className="space-y-0.5">
+                  <div className="flex items-center justify-between rounded-xl border border-border p-3 bg-background">
+                    <div className="flex flex-col gap-0.5">
                       <Label className="text-xs font-semibold">Request Early Check-in</Label>
                       <p className="text-[11px] text-muted-foreground">Subject to housekeeping room readiness</p>
                     </div>
                     <Switch checked={earlyCheckIn} onCheckedChange={setEarlyCheckIn} />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="flex flex-col gap-1.5">
                     <Label className="text-xs font-semibold">Special Preferences / Pillow & Dietary Notes</Label>
                     <Textarea
                       value={preferenceNotes}
                       onChange={(e) => setPreferenceNotes(e.target.value)}
                       placeholder="Extra pillows, high floor room, feather-free bed..."
-                      className="bg-background/50 min-h-20"
+                      className="bg-background min-h-20"
                     />
                   </div>
 
-                  <Button type="submit" className="w-full gap-2 shadow-lg shadow-rose-500/20">
+                  <Button type="submit" className="w-full gap-2 shadow-sm">
                     Save Stay Preferences
                   </Button>
                 </form>
@@ -366,20 +365,20 @@ export default function GuestPortalPage() {
             </Card>
 
             {/* Service Requests Panel */}
-            <Card className="glass-card border-border/60">
-              <CardHeader className="border-b border-border/40 pb-4">
+            <Card className="bg-card border-border">
+              <CardHeader className="border-b border-border pb-4">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Bell className="size-5 text-rose-500" />
+                  <Bell className="size-5 text-stay" />
                   Concierge & Service Requests
                 </CardTitle>
                 <CardDescription>Request amenities or room service directly to staff</CardDescription>
               </CardHeader>
-              <CardContent className="pt-6 space-y-6">
-                <form onSubmit={handleCreateRequest} className="space-y-3">
-                  <div className="space-y-1.5">
+              <CardContent className="pt-6 flex flex-col gap-6">
+                <form onSubmit={handleCreateRequest} className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-1.5">
                     <Label className="text-xs font-semibold">Request Type</Label>
                     <Select value={requestType} onValueChange={setRequestType}>
-                      <SelectTrigger className="bg-background/50">
+                      <SelectTrigger className="bg-background">
                         <SelectValue placeholder="Select service..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -392,35 +391,35 @@ export default function GuestPortalPage() {
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="flex flex-col gap-1.5">
                     <Label className="text-xs font-semibold">Details / Instructions</Label>
                     <Textarea
                       value={requestDetails}
                       onChange={(e) => setRequestDetails(e.target.value)}
                       placeholder="Specify timing or item details..."
-                      className="bg-background/50 min-h-16"
+                      className="bg-background min-h-16"
                     />
                   </div>
 
-                  <Button type="submit" className="w-full gap-2 shadow-lg shadow-rose-500/20">
+                  <Button type="submit" className="w-full gap-2 shadow-sm">
                     Dispatch Request to Staff
                   </Button>
                 </form>
 
                 {/* Submitted Requests List */}
-                <div className="space-y-2 pt-2">
+                <div className="flex flex-col gap-2 pt-2">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Request History</p>
                   {serviceRequests.length === 0 ? (
                     <p className="text-xs text-muted-foreground">No active service requests.</p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       {serviceRequests.map((sr) => (
-                        <div key={sr.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-background/50 text-xs">
+                        <div key={sr.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-background text-xs">
                           <div>
                             <p className="font-semibold text-foreground">{sr.request_type}</p>
                             {sr.details && <p className="text-muted-foreground">{sr.details}</p>}
                           </div>
-                          <Badge variant="outline" className="capitalize border-rose-500/30 text-rose-600 bg-rose-500/10">
+                          <Badge variant="outline" className="capitalize border-stay/30 text-stay bg-stay/10">
                             {sr.status}
                           </Badge>
                         </div>
@@ -432,7 +431,7 @@ export default function GuestPortalPage() {
             </Card>
           </div>
         )}
-      </main>
+      </motion.main>
     </div>
   );
 }

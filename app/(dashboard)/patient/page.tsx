@@ -16,7 +16,6 @@ import {
   Calendar,
   FileText,
   Users,
-  LogOut,
   Clock,
   User,
   Stethoscope,
@@ -31,7 +30,6 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
-import { RoleHeader } from "@/components/layout/RoleHeader";
 
 interface PatientStats {
   upcomingAppointments: number;
@@ -149,8 +147,7 @@ export default function PatientDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <RoleHeader currentRole="patient" />
-        <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <div className="max-w-7xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-12 w-64 rounded-xl" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
@@ -165,7 +162,7 @@ export default function PatientDashboard() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md glass-card p-6 text-center space-y-4">
+        <Card className="w-full max-w-md bg-card p-6 text-center flex flex-col gap-4">
           <div className="size-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto">
             <User className="size-8" />
           </div>
@@ -182,20 +179,17 @@ export default function PatientDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20 pb-12">
+    <div className="min-h-screen bg-background pb-12">
       {/* Unified Top Navigation */}
-      <RoleHeader currentRole="patient" />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8">
         {/* Patient Hero Welcome Banner */}
-        <div className="relative overflow-hidden rounded-3xl border border-teal-500/30 glass-card p-6 sm:p-8 glow-teal">
-          <div className="absolute -top-16 -right-16 size-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="relative overflow-hidden rounded-xl border border-care/30 bg-card p-6 sm:p-8 shadow-sm">
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-teal-500/40 text-teal-600 dark:text-teal-400 bg-teal-500/10 gap-1.5">
-                  <Heart className="size-3.5 fill-teal-500/30" />
+                <Badge variant="outline" className="border-care/40 text-care bg-care/10 gap-1.5">
+                  <Heart className="size-3.5 fill-care/30" />
                   Patient Portal
                 </Badge>
                 <span className="text-xs text-muted-foreground">• Active Care Session</span>
@@ -209,14 +203,14 @@ export default function PatientDashboard() {
             </div>
 
             {/* Quick Token Badge */}
-            <div className="flex items-center gap-4 rounded-2xl border border-border/60 bg-background/50 p-4 backdrop-blur-sm">
-              <div className="size-12 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+            <div className="flex items-center gap-4 rounded-2xl border border-border bg-background p-4">
+              <div className="size-12 rounded-xl bg-care/20 text-care flex items-center justify-center">
                 <Activity className="size-6 animate-pulse" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Queue System</p>
                 <p className="font-display text-lg font-bold text-foreground">Live OPD Status</p>
-                <span className="text-xs text-teal-600 dark:text-teal-400 font-medium">Ready & Active</span>
+                <span className="text-xs text-care font-medium">Ready & Active</span>
               </div>
             </div>
           </div>
@@ -224,12 +218,12 @@ export default function PatientDashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="glass-card border-border/60 hover:border-teal-500/40 transition-all duration-300">
+          <Card className="bg-card border-border hover:border-care/40 transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Upcoming Consultations
               </CardTitle>
-              <div className="size-10 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-care/15 text-care flex items-center justify-center">
                 <Calendar className="size-5" />
               </div>
             </CardHeader>
@@ -238,17 +232,17 @@ export default function PatientDashboard() {
                 {loadingData ? "..." : stats.upcomingAppointments}
               </div>
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                <Clock className="size-3 text-teal-500" /> Confirmed appointments scheduled
+                <Clock className="size-3 text-care" /> Confirmed appointments scheduled
               </p>
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-border/60 hover:border-indigo-500/40 transition-all duration-300">
+          <Card className="bg-card border-border hover:border-info/40 transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Completed Visits
               </CardTitle>
-              <div className="size-10 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-info/15 text-info flex items-center justify-center">
                 <Users className="size-5" />
               </div>
             </CardHeader>
@@ -257,17 +251,17 @@ export default function PatientDashboard() {
                 {loadingData ? "..." : stats.pastAppointments}
               </div>
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                <CheckCircle2 className="size-3 text-indigo-500" /> Historical consultation visits
+                <CheckCircle2 className="size-3 text-info" /> Historical consultation visits
               </p>
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-border/60 hover:border-cyan-500/40 transition-all duration-300">
+          <Card className="bg-card border-border hover:border-care/40 transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 Health Records
               </CardTitle>
-              <div className="size-10 rounded-xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-care/15 text-care flex items-center justify-center">
                 <FileText className="size-5" />
               </div>
             </CardHeader>
@@ -276,7 +270,7 @@ export default function PatientDashboard() {
                 {loadingData ? "..." : stats.medicalRecords}
               </div>
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                <Sparkles className="size-3 text-cyan-500" /> Clinical documents & summaries
+                <Sparkles className="size-3 text-care" /> Clinical documents & summaries
               </p>
             </CardContent>
           </Card>
@@ -284,36 +278,36 @@ export default function PatientDashboard() {
 
         {/* Upcoming Appointments */}
         {upcomingAppointments.length > 0 && (
-          <Card className="glass-card border-border/60">
-            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border/40">
+          <Card className="bg-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border">
               <div>
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Calendar className="size-5 text-teal-500" />
+                  <Calendar className="size-5 text-care" />
                   Upcoming Consultations
                 </CardTitle>
                 <CardDescription>Your active doctor appointments and token queue position</CardDescription>
               </div>
-              <Button asChild variant="ghost" size="sm" className="gap-1.5 text-teal-600 dark:text-teal-400">
+              <Button asChild variant="ghost" size="sm" className="gap-1.5 text-care">
                 <Link href="/patient/appointments">
                   View All <ArrowRight className="size-4" />
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4">
+            <CardContent className="pt-6 flex flex-col gap-4">
               {upcomingAppointments.map((apt) => (
                 <div
                   key={apt.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-border/50 bg-background/50 hover:border-teal-500/40 transition-all gap-4"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-border bg-background hover:border-care/40 transition-all gap-4"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="size-12 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                    <div className="size-12 rounded-2xl bg-care/15 text-care flex items-center justify-center shrink-0">
                       <Stethoscope className="size-6" />
                     </div>
                     <div>
                       <p className="font-semibold text-foreground text-base">
                         Dr. {apt.doctor?.profile?.full_name || "Specialist"}
                       </p>
-                      <p className="text-xs font-medium text-teal-600 dark:text-teal-400">
+                      <p className="text-xs font-medium text-care">
                         {apt.doctor?.specialization}
                       </p>
                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
@@ -330,11 +324,11 @@ export default function PatientDashboard() {
 
                   <div className="flex items-center gap-3 justify-between sm:justify-end">
                     {apt.token_number && (
-                      <div className="px-3 py-1 rounded-full bg-teal-500 text-teal-950 font-mono font-bold text-xs shadow-sm">
+                      <Badge className="bg-care text-care-foreground font-mono font-bold text-xs shadow-sm">
                         Token #{apt.token_number}
-                      </div>
+                      </Badge>
                     )}
-                    <Badge variant="outline" className="border-teal-500/30 text-teal-600 dark:text-teal-400 bg-teal-500/10 capitalize">
+                    <Badge variant="outline" className="border-care/30 text-care bg-care/10 capitalize">
                       {apt.status}
                     </Badge>
                   </div>
@@ -345,23 +339,23 @@ export default function PatientDashboard() {
         )}
 
         {/* Action Hub Cards */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <h2 className="font-display text-xl font-bold">Healthcare Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <Link href="/patient/appointments" className="group">
-              <Card className="glass-card border-border/60 hover:border-teal-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-care/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-care/15 text-care flex items-center justify-center transition-transform group-hover:scale-110">
                     <Calendar className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-care transition-colors">
                     Book Appointment
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Schedule OPD consultations with specialists.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-teal-600 dark:text-teal-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-care gap-1">
                   <span>Browse Roster</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -369,19 +363,19 @@ export default function PatientDashboard() {
             </Link>
 
             <Link href="/patient/records" className="group">
-              <Card className="glass-card border-border/60 hover:border-indigo-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-info/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-info/15 text-info flex items-center justify-center transition-transform group-hover:scale-110">
                     <FileText className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-info transition-colors">
                     Medical Records
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Access historical consultation notes.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-info gap-1">
                   <span>View History</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -389,19 +383,19 @@ export default function PatientDashboard() {
             </Link>
 
             <Link href="/patient/laboratory" className="group">
-              <Card className="glass-card border-border/60 hover:border-cyan-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-care/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-care/15 text-care flex items-center justify-center transition-transform group-hover:scale-110">
                     <FlaskConical className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-care transition-colors">
                     Lab Reports
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Download diagnostic lab test results.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-cyan-600 dark:text-cyan-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-care gap-1">
                   <span>View Results</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -409,19 +403,19 @@ export default function PatientDashboard() {
             </Link>
 
             <Link href="/patient/pharma" className="group">
-              <Card className="glass-card border-border/60 hover:border-amber-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-warning/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-warning/15 text-warning flex items-center justify-center transition-transform group-hover:scale-110">
                     <Pill className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-warning transition-colors">
                     Prescriptions
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Track medicine fulfillment status.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-amber-600 dark:text-amber-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-warning gap-1">
                   <span>View Medicines</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -429,19 +423,19 @@ export default function PatientDashboard() {
             </Link>
 
             <Link href="/patient/discharge" className="group">
-              <Card className="glass-card border-border/60 hover:border-rose-500/50 hover:shadow-lg transition-all h-full p-5 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="size-12 rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center transition-transform group-hover:scale-110">
+              <Card className="bg-card border-border hover:border-stay/50 hover:shadow-sm transition-all h-full p-5 flex flex-col justify-between">
+                <div className="flex flex-col gap-3">
+                  <div className="size-12 rounded-2xl bg-stay/15 text-stay flex items-center justify-center transition-transform group-hover:scale-110">
                     <FileDown className="size-6" />
                   </div>
-                  <h3 className="font-semibold text-base text-foreground group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                  <h3 className="font-semibold text-base text-foreground group-hover:text-stay transition-colors">
                     Discharge Summary
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Download clinical discharge documents.
                   </p>
                 </div>
-                <div className="pt-4 flex items-center text-xs font-semibold text-rose-600 dark:text-rose-400 gap-1">
+                <div className="pt-4 flex items-center text-xs font-semibold text-stay gap-1">
                   <span>Download PDF</span>
                   <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
                 </div>

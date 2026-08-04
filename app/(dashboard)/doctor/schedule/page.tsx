@@ -238,7 +238,7 @@ export default function DoctorSchedulePage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-64 w-full" />
         </div>
@@ -303,7 +303,7 @@ export default function DoctorSchedulePage() {
               Configure your consultation preferences
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
               <div>
                 <Label>Available for Appointments</Label>
@@ -404,7 +404,7 @@ export default function DoctorSchedulePage() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 {availability.map((slot, index) => (
                   <div
                     key={slot.id || index}

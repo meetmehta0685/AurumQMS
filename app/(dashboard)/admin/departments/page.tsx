@@ -193,7 +193,7 @@ export default function AdminDepartmentsPage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-64 w-full" />
         </div>
@@ -236,7 +236,7 @@ export default function AdminDepartmentsPage() {
                   Create a new hospital department
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
+              <div className="flex flex-col gap-4 py-4">
                 <div>
                   <Label>Department Name *</Label>
                   <Input
@@ -355,7 +355,7 @@ export default function AdminDepartmentsPage() {
                 Update department information
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="flex flex-col gap-4 py-4">
               <div>
                 <Label>Department Name *</Label>
                 <Input

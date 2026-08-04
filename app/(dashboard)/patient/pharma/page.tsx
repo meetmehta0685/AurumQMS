@@ -56,7 +56,7 @@ export default function PatientPharmaPage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-5xl mx-auto space-y-4">
+        <div className="max-w-5xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-72 w-full" />
         </div>
@@ -66,7 +66,7 @@ export default function PatientPharmaPage() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <Link href="/patient">
             <Button variant="ghost" size="sm">
@@ -89,7 +89,7 @@ export default function PatientPharmaPage() {
             {items.length === 0 ? (
               <p className="text-muted-foreground">No pharmacy records found.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {items.map((item) => (
                   <div key={item.id} className="p-3 rounded-lg border border-border flex items-center justify-between gap-4">
                     <div>

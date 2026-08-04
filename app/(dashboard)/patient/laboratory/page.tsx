@@ -73,7 +73,7 @@ export default function PatientLaboratoryPage() {
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-5xl mx-auto space-y-4">
+        <div className="max-w-5xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-72 w-full" />
         </div>
@@ -83,7 +83,7 @@ export default function PatientLaboratoryPage() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <Link href="/patient">
             <Button variant="ghost" size="sm">
@@ -106,7 +106,7 @@ export default function PatientLaboratoryPage() {
             {orders.length === 0 ? (
               <p className="text-muted-foreground">No lab orders yet.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {orders.map((order) => (
                   <div key={order.id} className="p-3 rounded-lg border border-border flex items-center justify-between gap-3">
                     <div>
@@ -130,7 +130,7 @@ export default function PatientLaboratoryPage() {
             {reports.length === 0 ? (
               <p className="text-muted-foreground">No reports uploaded yet.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {reports.map((report) => (
                   <div key={report.id} className="p-3 rounded-lg border border-border">
                     <p className="font-medium">{report.report_title}</p>
