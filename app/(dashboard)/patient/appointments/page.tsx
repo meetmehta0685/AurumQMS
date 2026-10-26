@@ -251,18 +251,15 @@ export default function PatientAppointmentsPage() {
         const duration = doctor?.consultation_duration || 15;
 
         // Get existing appointments for this date
-        const { data: existingAppointments } = await supabase
-          .from("appointments")
-          .select("appointment_time")
-          .eq("doctor_id", selectedDoctor)
-          .eq("appointment_date", dateStr)
-          .in("status", ["pending", "confirmed"]);
+        // RPC: patients can't read other patients' appointments directly
+        const { data: bookedRows } = await supabase.rpc("get_booked_times", {
+          p_doctor_id: selectedDoctor,
+          p_date: dateStr,
+        });
 
         // Normalize time format to HH:mm (remove seconds if present)
         const bookedTimes = new Set(
-          existingAppointments?.map((a) =>
-            a.appointment_time.substring(0, 5),
-          ) || [],
+          ((bookedRows as string[] | null) || []).map((t) => t.substring(0, 5)),
         );
 
         // Generate time slots
@@ -319,30 +316,27 @@ export default function PatientAppointmentsPage() {
     try {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-      // Get the next token number for this doctor and date
-      const { data: existingTokens } = await supabase
+      // token_number is assigned by the set_token_number database trigger
+      const { data: booked, error } = await supabase
         .from("appointments")
+        .insert({
+          patient_id: profile.id,
+          doctor_id: selectedDoctor,
+          appointment_date: dateStr,
+          appointment_time: selectedTime,
+          status: "pending",
+          notes: appointmentNotes || null,
+        })
         .select("token_number")
-        .eq("doctor_id", selectedDoctor)
-        .eq("appointment_date", dateStr)
-        .order("token_number", { ascending: false })
-        .limit(1);
+        .single();
 
-      const nextToken = (existingTokens?.[0]?.token_number || 0) + 1;
+      if (error) {
+        throw error.code === "23505"
+          ? new Error("That slot was just taken. Pick another time.")
+          : error;
+      }
 
-      const { error } = await supabase.from("appointments").insert({
-        patient_id: profile.id,
-        doctor_id: selectedDoctor,
-        appointment_date: dateStr,
-        appointment_time: selectedTime,
-        status: "pending",
-        token_number: nextToken,
-        notes: appointmentNotes || null,
-      });
-
-      if (error) throw error;
-
-      toast.success(`Appointment booked! Your token number is ${nextToken}`);
+      toast.success(`Appointment booked! Your token number is ${booked.token_number}`);
       setShowBookDialog(false);
       resetBookingForm();
       await fetchAppointments();

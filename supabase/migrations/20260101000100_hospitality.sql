@@ -1,20 +1,6 @@
--- Hospitality module schema + seed data
--- Run this after your existing schema.sql
+-- Hospitality schema: room types, rooms, reservations, allocations, service requests
 
--- =====================================================
--- EXTEND PROFILE ROLES
--- =====================================================
-ALTER TABLE profiles
-  DROP CONSTRAINT IF EXISTS profiles_role_check;
-
-ALTER TABLE profiles
-  ADD CONSTRAINT profiles_role_check
-  CHECK (role IN ('patient', 'doctor', 'admin', 'guest', 'staff', 'lab', 'pharma'));
-
--- =====================================================
--- ROOM TYPES
--- =====================================================
-CREATE TABLE IF NOT EXISTS room_types (
+CREATE TABLE room_types (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(100) NOT NULL UNIQUE,
   description TEXT,
@@ -26,7 +12,6 @@ CREATE TABLE IF NOT EXISTS room_types (
 
 ALTER TABLE room_types ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Authenticated can read room types" ON room_types;
 CREATE POLICY "Authenticated can read room types"
   ON room_types FOR SELECT
   USING (auth.uid() IS NOT NULL);
@@ -34,7 +19,7 @@ CREATE POLICY "Authenticated can read room types"
 -- =====================================================
 -- ROOMS
 -- =====================================================
-CREATE TABLE IF NOT EXISTS rooms (
+CREATE TABLE rooms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   room_number VARCHAR(20) NOT NULL UNIQUE,
   floor INTEGER NOT NULL,
@@ -47,9 +32,6 @@ CREATE TABLE IF NOT EXISTS rooms (
 );
 
 ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Authenticated can read rooms" ON rooms;
-DROP POLICY IF EXISTS "Staff can manage rooms" ON rooms;
 
 CREATE POLICY "Authenticated can read rooms"
   ON rooms FOR SELECT
@@ -67,7 +49,7 @@ CREATE POLICY "Staff can manage rooms"
 -- =====================================================
 -- RESERVATIONS
 -- =====================================================
-CREATE TABLE IF NOT EXISTS reservations (
+CREATE TABLE reservations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   reservation_code VARCHAR(20) NOT NULL UNIQUE,
   guest_profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -84,11 +66,6 @@ CREATE TABLE IF NOT EXISTS reservations (
 );
 
 ALTER TABLE reservations ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Guests can read own reservations" ON reservations;
-DROP POLICY IF EXISTS "Guests can update own reservations" ON reservations;
-DROP POLICY IF EXISTS "Staff can read all reservations" ON reservations;
-DROP POLICY IF EXISTS "Staff can manage reservations" ON reservations;
 
 CREATE POLICY "Guests can read own reservations"
   ON reservations FOR SELECT
@@ -113,7 +90,7 @@ CREATE POLICY "Staff can manage reservations"
 -- =====================================================
 -- ROOM ALLOCATIONS
 -- =====================================================
-CREATE TABLE IF NOT EXISTS room_allocations (
+CREATE TABLE room_allocations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   reservation_id UUID NOT NULL UNIQUE REFERENCES reservations(id) ON DELETE CASCADE,
   room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
@@ -123,9 +100,6 @@ CREATE TABLE IF NOT EXISTS room_allocations (
 );
 
 ALTER TABLE room_allocations ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Guests can read own allocations" ON room_allocations;
-DROP POLICY IF EXISTS "Staff can manage allocations" ON room_allocations;
 
 CREATE POLICY "Guests can read own allocations"
   ON room_allocations FOR SELECT
@@ -145,7 +119,7 @@ CREATE POLICY "Staff can manage allocations"
 -- =====================================================
 -- SERVICE REQUESTS
 -- =====================================================
-CREATE TABLE IF NOT EXISTS service_requests (
+CREATE TABLE service_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   reservation_id UUID NOT NULL REFERENCES reservations(id) ON DELETE CASCADE,
   request_type VARCHAR(50) NOT NULL,
@@ -157,10 +131,6 @@ CREATE TABLE IF NOT EXISTS service_requests (
 );
 
 ALTER TABLE service_requests ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Guests can create service requests" ON service_requests;
-DROP POLICY IF EXISTS "Guests can read own service requests" ON service_requests;
-DROP POLICY IF EXISTS "Staff can manage service requests" ON service_requests;
 
 CREATE POLICY "Guests can create service requests"
   ON service_requests FOR INSERT
@@ -189,69 +159,65 @@ CREATE POLICY "Staff can manage service requests"
 -- =====================================================
 -- SEED DATA
 -- =====================================================
-INSERT INTO room_types (name, description, capacity, base_rate) VALUES
-  ('Deluxe Suite', 'Spacious suite with city view', 2, 240.00),
-  ('Executive King', 'Premium king room with lounge access', 2, 180.00),
-  ('Garden Villa', 'Private villa with garden access', 4, 420.00)
-ON CONFLICT (name) DO NOTHING;
 
-INSERT INTO rooms (room_number, floor, room_type_id, status) VALUES
-  ('118', 1, (SELECT id FROM room_types WHERE name = 'Executive King'), 'ready'),
-  ('204', 2, (SELECT id FROM room_types WHERE name = 'Executive King'), 'cleaning'),
-  ('305', 3, (SELECT id FROM room_types WHERE name = 'Deluxe Suite'), 'ready'),
-  ('402', 4, (SELECT id FROM room_types WHERE name = 'Deluxe Suite'), 'ready'),
-  ('418', 4, (SELECT id FROM room_types WHERE name = 'Deluxe Suite'), 'maintenance'),
-  ('512', 5, (SELECT id FROM room_types WHERE name = 'Executive King'), 'ready'),
-  ('601', 6, (SELECT id FROM room_types WHERE name = 'Deluxe Suite'), 'ready'),
-  ('612', 6, (SELECT id FROM room_types WHERE name = 'Executive King'), 'ready'),
-  ('701', 7, (SELECT id FROM room_types WHERE name = 'Deluxe Suite'), 'cleaning'),
-  ('801', 8, (SELECT id FROM room_types WHERE name = 'Garden Villa'), 'ready'),
-  ('812', 8, (SELECT id FROM room_types WHERE name = 'Garden Villa'), 'ready'),
-  ('912', 9, (SELECT id FROM room_types WHERE name = 'Garden Villa'), 'out_of_service')
-ON CONFLICT (room_number) DO NOTHING;
-
-DO $$
+-- =====================================================
+-- ROOM ALLOCATION (atomic: pick a ready room, assign it, mark it occupied)
+-- =====================================================
+CREATE OR REPLACE FUNCTION public.allocate_room(
+  p_reservation_code TEXT,
+  p_room_type_id UUID DEFAULT NULL,
+  p_floor INTEGER DEFAULT NULL,
+  p_notes TEXT DEFAULT NULL
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 DECLARE
-  guest_profile_id UUID;
-  guest_last_name TEXT;
+  staff_id UUID;
+  res reservations%ROWTYPE;
+  chosen_room rooms%ROWTYPE;
 BEGIN
-  SELECT id, COALESCE(NULLIF(split_part(full_name, ' ', 2), ''), full_name)
-  INTO guest_profile_id, guest_last_name
-  FROM profiles
-  WHERE role = 'guest'
-  ORDER BY created_at
-  LIMIT 1;
-
-  IF guest_profile_id IS NULL THEN
-    SELECT id, COALESCE(NULLIF(split_part(full_name, ' ', 2), ''), full_name)
-    INTO guest_profile_id, guest_last_name
-    FROM profiles
-    WHERE role = 'patient'
-    ORDER BY created_at
-    LIMIT 1;
+  SELECT id INTO staff_id FROM profiles
+  WHERE user_id = auth.uid() AND role IN ('admin', 'staff');
+  IF staff_id IS NULL THEN
+    RAISE EXCEPTION 'Only staff can allocate rooms';
   END IF;
 
-  IF guest_profile_id IS NULL THEN
-    RAISE NOTICE 'No guest or patient profile found. Create a guest user to seed reservations.';
-    RETURN;
+  SELECT * INTO res FROM reservations
+  WHERE upper(reservation_code) = upper(trim(p_reservation_code))
+  FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Reservation % not found', p_reservation_code;
+  END IF;
+  IF res.status IN ('cancelled', 'checked_out') THEN
+    RAISE EXCEPTION 'Reservation % is %', res.reservation_code, res.status;
+  END IF;
+  IF EXISTS (SELECT 1 FROM room_allocations WHERE reservation_id = res.id) THEN
+    RAISE EXCEPTION 'Reservation % already has a room', res.reservation_code;
   END IF;
 
-  INSERT INTO reservations (
-    reservation_code,
-    guest_profile_id,
-    last_name,
-    arrival_date,
-    departure_date,
-    room_type_id,
-    status,
-    early_check_in,
-    preference_notes
-  ) VALUES
-    ('AR-2391', guest_profile_id, guest_last_name, CURRENT_DATE, CURRENT_DATE + INTERVAL '2 days',
-      (SELECT id FROM room_types WHERE name = 'Deluxe Suite'), 'confirmed', true, 'Quiet room, extra pillows'),
-    ('AR-4530', guest_profile_id, guest_last_name, CURRENT_DATE, CURRENT_DATE + INTERVAL '3 days',
-      (SELECT id FROM room_types WHERE name = 'Executive King'), 'pending', false, 'Late arrival after 10 PM'),
-    ('AR-7812', guest_profile_id, guest_last_name, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE + INTERVAL '4 days',
-      (SELECT id FROM room_types WHERE name = 'Garden Villa'), 'pending', false, NULL)
-  ON CONFLICT (reservation_code) DO NOTHING;
-END $$;
+  SELECT * INTO chosen_room FROM rooms
+  WHERE status = 'ready'
+    AND room_type_id = COALESCE(p_room_type_id, res.room_type_id, room_type_id)
+    AND (p_floor IS NULL OR floor = p_floor)
+  ORDER BY room_number
+  LIMIT 1
+  FOR UPDATE SKIP LOCKED;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'No ready room matches that request';
+  END IF;
+
+  INSERT INTO room_allocations (reservation_id, room_id, staff_profile_id, notes)
+  VALUES (res.id, chosen_room.id, staff_id, p_notes);
+
+  UPDATE rooms SET status = 'occupied', updated_at = now() WHERE id = chosen_room.id;
+  UPDATE reservations SET status = 'confirmed', updated_at = now()
+  WHERE id = res.id AND status = 'pending';
+
+  RETURN chosen_room.room_number;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.allocate_room(TEXT, UUID, INTEGER, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.allocate_room(TEXT, UUID, INTEGER, TEXT) TO authenticated;

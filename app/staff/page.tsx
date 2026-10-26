@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -55,15 +54,8 @@ type Arrival = {
   room_types?: { name: string } | null;
 };
 
-type Profile = {
-  id: string;
-  role: string;
-};
-
 export default function StaffPortalPage() {
-  const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [inventory, setInventory] = useState({
     ready: 0,
@@ -125,22 +117,6 @@ export default function StaffPortalPage() {
   };
 
   useEffect(() => {
-    const ensureAuth = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
-        router.push("/login");
-        return;
-      }
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("id, role")
-        .eq("user_id", data.user.id)
-        .maybeSingle();
-      if (profileData) {
-        setProfile(profileData);
-      }
-    };
-
     const loadRoomTypes = async () => {
       const { data, error } = await supabase
         .from("room_types")
@@ -151,10 +127,9 @@ export default function StaffPortalPage() {
       }
     };
 
-    ensureAuth();
     loadRoomTypes();
     loadDashboard();
-  }, [router, supabase]);
+  }, [supabase]);
 
   const handleUpdateStatus = async (roomId: string, nextStatus: string) => {
     try {
@@ -181,23 +156,19 @@ export default function StaffPortalPage() {
 
     setIsLoading(true);
     try {
-      const payload = {
-        guest_name: guestName.trim(),
-        reservation_code: reservationCode.trim(),
-        room_type_id: roomTypeId || null,
-        floor: floor ? Number(floor) : null,
-        notes: notes || null,
-        status: "pending",
-        staff_id: profile?.id || null,
-      };
+      const { data: roomNumber, error } = await supabase.rpc("allocate_room", {
+        p_reservation_code: reservationCode.trim(),
+        p_room_type_id: roomTypeId || null,
+        p_floor: floor ? Number(floor) : null,
+        p_notes: notes || null,
+      });
 
-      const { error } = await supabase
-        .from("room_assignments")
-        .insert(payload);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
 
-      if (error) throw error;
-
-      toast.success("Room allocation saved");
+      toast.success(`Room ${roomNumber} allocated`);
       setGuestName("");
       setReservationCode("");
       setRoomTypeId("");

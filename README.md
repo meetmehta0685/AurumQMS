@@ -9,88 +9,66 @@ This README is the single source of truth for local setup and production deploym
 
 ## Tech Stack
 
-- Next.js 16 (App Router)
-- React 19 + TypeScript
+- Next.js 16 (App Router), React 19, TypeScript
 - Tailwind CSS v4 + shadcn/ui
-- Supabase (PostgreSQL, Auth, Realtime)
-- React Hook Form + Zod
-- Resend (email notifications)
-- Twilio (optional SMS notifications)
+- Supabase (PostgreSQL, Auth, Row Level Security)
+- React Hook Form + Zod, pdf-lib (discharge PDFs)
 
 ## Prerequisites
 
-- Node.js 20+
-- npm 10+
-- Supabase project
-- (Optional) Vercel account for deployment
-
-## Environment Variables
-
-Create `.env.local` in the project root:
-
-```dotenv
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-RESEND_API_KEY=your_resend_api_key
-NEXT_PUBLIC_APP_EMAIL=noreply@yourdomain.com
-
-# Optional SMS
-# TWILIO_ACCOUNT_SID=your_account_sid
-# TWILIO_AUTH_TOKEN=your_auth_token
-# TWILIO_PHONE_NUMBER=+1234567890
-```
-
-## Database Setup
-
-Use Supabase SQL Editor and run scripts from the `supabase/` folder in this order:
-
-1. `supabase/schema.sql`
-2. `supabase/hospitality.sql`
-3. Optional seed data as needed:
-   - `supabase/seed-departments.sql`
-   - `supabase/seed-doctors.sql`
-   - `supabase/seed-dummy-doctors.sql`
-   - `supabase/seed-clinical-demo.sql`
-   - `supabase/seed-denish-pdf.sql`
-4. If needed for fixes/hardening:
-   - `supabase/fix-profiles-lab-pharma.sql`
-   - `supabase/security-hardening.sql`
+- Node.js 20+ and npm 10+
+- Docker (for the local Supabase stack), or a hosted Supabase project
 
 ## Local Development
 
-Install and run:
-
 ```bash
 npm install
+npm run db:start      # starts local Supabase, applies supabase/migrations, loads supabase/seed.sql
+npx supabase status   # copy "API URL" and "anon key" into .env.local (see .env.example)
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000` and use a demo shortcut on the login page.
+Every demo account uses the password `password123`:
 
-## Verify Before Deploying
+| Role | Email |
+|---|---|
+| Patient | `patient@demo.com` |
+| Doctor | `doctor@demo.com` |
+| Admin | `admin@demo.com` |
+| Lab | `lab@demo.com` |
+| Pharmacy | `pharma@demo.com` |
+| Hotel guest | `guest@demo.com` (reservations `AR-2391`, `AR-4530`, `AR-7812`, last name `Rao`) |
+| Hotel staff | `staff@demo.com` |
+
+`npm run db:reset` rebuilds the local database from the migrations and seed.
+
+## Database
+
+- `supabase/migrations/` holds the whole schema, RLS policies, and database functions.
+- `supabase/seed.sql` creates the demo accounts and sample data. Use it for local or demo projects only.
+- Public signup creates **patient** or **guest** profiles only. The `handle_new_user` trigger enforces this.
+  Other roles are assigned by an admin, who changes `profiles.role`.
+- Token numbers, slot availability, queue position, and room allocation are computed in the database:
+  the `set_token_number` trigger and the `get_booked_times`, `get_queue`, and `allocate_room` functions.
+  The browser never computes them from partial data.
+
+## Verify
 
 ```bash
 npm run lint
+npm run typecheck
 npm run build
 ```
 
-Both commands should pass before deployment.
+## Deployment (Vercel + hosted Supabase)
 
-## Deployment (Vercel Recommended)
-
-1. Push this repository to GitHub.
-2. Import the project in Vercel.
-3. Add all environment variables from `.env.local` to Vercel Project Settings.
+1. Create a Supabase project, then link it and push the schema:
+   `npx supabase link --project-ref <ref>` and `npx supabase db push`.
+   Optionally run `supabase/seed.sql` in the SQL editor to get the demo accounts.
+2. In Vercel, set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to that project's values.
+3. In Supabase Auth settings, set the Site URL to the Vercel domain and add `<domain>/callback` as a redirect URL.
 4. Deploy.
-
-CLI option:
-
-```bash
-npm run build
-npm start
-vercel deploy
-```
 
 ## Routes Overview
 
@@ -113,8 +91,8 @@ Hospitality module:
 
 - Request interception uses `proxy.ts`.
 - Role-based access is enforced in `lib/supabase/middleware.ts` using `lib/auth/roles.ts`.
+- Protected routes fail closed: if the role can't be verified, the user is sent to `/login`.
 - Self-signup is restricted to patient/guest roles.
-- RLS policies are part of the SQL scripts and must be applied in Supabase.
 
 ## Project Structure
 
@@ -122,7 +100,7 @@ Hospitality module:
 - `components/`: shared UI and dashboard components
 - `hooks/`: custom hooks
 - `lib/`: Supabase clients, roles, validations, utilities
-- `supabase/`: SQL schema, seeds, and hardening scripts
+- `supabase/`: config, migrations, and demo seed
 - `types/`: shared TypeScript types
 
 ## Support Docs

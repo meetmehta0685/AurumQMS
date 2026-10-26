@@ -1,18 +1,11 @@
 import { z } from "zod";
+import { SELF_SERVICE_ROLES } from "@/lib/auth/roles";
 
 export const signUpSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   full_name: z.string().min(2, "Name must be at least 2 characters"),
-  role: z.enum([
-    "patient",
-    "doctor",
-    "admin",
-    "guest",
-    "staff",
-    "lab",
-    "pharma",
-  ]),
+  role: z.enum(SELF_SERVICE_ROLES),
 });
 
 export const signInSchema = z.object({

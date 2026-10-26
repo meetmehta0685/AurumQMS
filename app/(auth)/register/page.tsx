@@ -32,19 +32,11 @@ import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { createClient } from "@/lib/supabase/client";
-import { SELF_SERVICE_ROLES } from "@/lib/auth/roles";
+import { resolveRoleHomeRoute, SELF_SERVICE_ROLES } from "@/lib/auth/roles";
 import { signUpSchema, type SignUpInput } from "@/lib/validations/auth";
 import type { UserRole } from "@/types";
 
-const roleOrder: UserRole[] = [
-  "patient",
-  "doctor",
-  "admin",
-  "lab",
-  "pharma",
-  "guest",
-  "staff",
-];
+const roleOrder: UserRole[] = [...SELF_SERVICE_ROLES];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -59,11 +51,10 @@ export default function RegisterPage() {
   const onSubmit = async (data: SignUpInput) => {
     setIsLoading(true);
     try {
-      const role = SELF_SERVICE_ROLES.includes(data.role) ? data.role : "patient";
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        options: { data: { full_name: data.full_name, role } },
+        options: { data: { full_name: data.full_name, role: data.role } },
       });
 
       if (authError) {
@@ -75,23 +66,15 @@ export default function RegisterPage() {
         return;
       }
 
-      const { error: profileError } = await supabase.from("profiles").insert({
-        user_id: authData.user.id,
-        role,
-        full_name: data.full_name,
-        email: data.email,
-      });
-
-      if (
-        profileError &&
-        profileError.code !== "42501" &&
-        !profileError.message?.includes("policy")
-      ) {
-        toast.error(`Profile setup failed: ${profileError.message}`);
+      // With email confirmation off, signUp returns an active session.
+      if (authData.session) {
+        toast.success("Account created. Opening your workspace.");
+        router.push(resolveRoleHomeRoute(data.role));
+        router.refresh();
         return;
       }
 
-      toast.success("Account created. Sign in to continue.");
+      toast.success("Account created. Check your email to confirm, then sign in.");
       router.push("/login");
     } catch (error) {
       console.error("Registration error:", error);
@@ -145,8 +128,8 @@ export default function RegisterPage() {
               Start with the work you own.
             </h1>
             <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
-              Choose a role and AURUM QMS will route you to a workspace
-              built around that responsibility.
+              Patients and hotel guests can sign up here. Doctor, lab, pharmacy,
+              admin, and staff accounts are created by an administrator.
             </p>
           </div>
           <ul className="flex max-w-xl flex-col gap-3 text-sm text-muted-foreground">
@@ -169,7 +152,7 @@ export default function RegisterPage() {
           <CardHeader>
             <CardTitle className="font-display text-3xl tracking-tight">Create your account</CardTitle>
             <CardDescription>
-              Select the workspace that matches your role, then add your details.
+              Choose patient or guest, then add your details.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -239,7 +222,7 @@ export default function RegisterPage() {
                           variant="outline"
                           spacing={1}
                           disabled={isLoading}
-                          className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3"
+                          className="grid w-full grid-cols-2 gap-2"
                           aria-label="Choose a workspace role"
                         >
                           {roleOrder.map((role) => {

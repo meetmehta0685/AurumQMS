@@ -250,7 +250,7 @@ export default function PharmaPortalPage() {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispensary Log</p>
-                <p className="font-display text-xl font-bold text-foreground">{items.length} Fulfilled</p>
+                <p className="font-display text-xl font-bold text-foreground">{items.filter((i) => i.dispense_status === "dispensed").length} Fulfilled</p>
                 <span className="text-xs text-warning font-medium">Ready for Pick-up</span>
               </div>
             </div>

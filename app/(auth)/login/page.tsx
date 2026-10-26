@@ -39,7 +39,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { createClient } from "@/lib/supabase/client";
-import { isSelfServiceRole, resolveRoleHomeRoute } from "@/lib/auth/roles";
+import { resolveRoleHomeRoute } from "@/lib/auth/roles";
 import { signInSchema, type SignInInput } from "@/lib/validations/auth";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types";
@@ -95,40 +95,22 @@ export default function LoginPage() {
         .eq("user_id", authData.user.id)
         .maybeSingle();
 
-      let resolvedRole = profileData?.role;
+      // Return to the protected page that sent the user here, if any.
+      const next = new URLSearchParams(window.location.search).get("next");
+      const target =
+        next?.startsWith("/") && !next.startsWith("//")
+          ? next
+          : resolveRoleHomeRoute(profileData?.role);
 
-      if (!resolvedRole) {
-        const metadata = authData.user.user_metadata || {};
-        const metadataRole = isSelfServiceRole(metadata.role)
-          ? metadata.role
-          : "patient";
-        const fullName =
-          typeof metadata.full_name === "string" && metadata.full_name.trim()
-            ? metadata.full_name.trim()
-            : authData.user.email?.split("@")[0] || "User";
-
-        const { data: createdProfile, error: profileInsertError } =
-          await supabase
-            .from("profiles")
-            .insert({
-              user_id: authData.user.id,
-              role: metadataRole,
-              full_name: fullName,
-              email: authData.user.email || data.email,
-            })
-            .select("role")
-            .maybeSingle();
-
-        if (profileInsertError) {
-          toast.error(profileInsertError.message);
-          return;
-        }
-
-        resolvedRole = createdProfile?.role || metadataRole;
+      if (!profileData?.role) {
+        toast.error("No profile found for this account.");
+        await supabase.auth.signOut();
+        return;
       }
 
       toast.success("Welcome back. Opening your workspace.");
-      router.push(resolveRoleHomeRoute(resolvedRole));
+      router.push(target);
+      router.refresh();
     } catch (error) {
       console.error("Login error:", error);
       toast.error("We could not start your session. Try again.");

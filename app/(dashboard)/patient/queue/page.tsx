@@ -115,13 +115,14 @@ export default function PatientQueuePage() {
       for (const apt of transformedAppointments) {
         if (apt.token_number && apt.doctor?.id) {
           // Get all appointments for this doctor today
-          const { data: doctorQueue } = await supabase
-            .from("appointments")
-            .select("id, token_number, status")
-            .eq("doctor_id", apt.doctor.id)
-            .eq("appointment_date", today)
-            .in("status", ["pending", "confirmed", "completed"])
-            .order("token_number", { ascending: true });
+          // RPC: anonymous token/status list for this doctor's day
+          const { data } = await supabase.rpc("get_queue", {
+            p_doctor_id: apt.doctor.id,
+            p_date: today,
+          });
+          const doctorQueue = data as
+            | { token_number: number | null; status: string }[]
+            | null;
 
           if (doctorQueue) {
             // Find current token (last completed or first pending)

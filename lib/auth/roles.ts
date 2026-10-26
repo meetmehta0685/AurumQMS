@@ -1,14 +1,8 @@
 import type { UserRole } from "@/types";
 
-export const SELF_SERVICE_ROLES = [
-  "patient",
-  "doctor",
-  "admin",
-  "guest",
-  "staff",
-  "lab",
-  "pharma",
-] as const;
+// Public signup may only create these roles; staff roles are assigned by an
+// admin. The database trigger `handle_new_user` enforces the same rule.
+export const SELF_SERVICE_ROLES = ["patient", "guest"] as const;
 
 export type SelfServiceRole = (typeof SELF_SERVICE_ROLES)[number];
 
@@ -34,13 +28,6 @@ const PROTECTED_ROUTE_RULES: Array<{
   { prefix: "/staff", allowedRoles: ["admin", "staff"] },
   { prefix: "/guest", allowedRoles: ["patient", "guest"] },
 ];
-
-export function isSelfServiceRole(role: unknown): role is SelfServiceRole {
-  return (
-    typeof role === "string" &&
-    SELF_SERVICE_ROLES.includes(role as SelfServiceRole)
-  );
-}
 
 export function resolveRoleHomeRoute(role: string | null | undefined) {
   if (role && role in ROLE_HOME_ROUTES) {
