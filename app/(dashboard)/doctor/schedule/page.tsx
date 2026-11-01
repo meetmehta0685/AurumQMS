@@ -237,7 +237,7 @@ export default function DoctorSchedulePage() {
 
   if (isLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-[calc(100svh-4.5rem)] bg-background p-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-64 w-full" />
@@ -248,7 +248,7 @@ export default function DoctorSchedulePage() {
 
   if (!doctorId) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-[calc(100svh-4.5rem)] bg-background p-4">
         <div className="max-w-4xl mx-auto">
           <Card>
             <CardContent className="py-8 text-center">
@@ -266,7 +266,7 @@ export default function DoctorSchedulePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-[calc(100svh-4.5rem)] bg-background p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

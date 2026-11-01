@@ -3,30 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Activity,
-  ArrowLeft,
-  CheckCircle2,
-  LockKeyhole,
-  Mail,
-  ShieldCheck,
-} from "lucide-react";
 import { toast } from "sonner";
 
 import { roleMeta, suiteMeta } from "@/components/layout/role-config";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -36,7 +18,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { createClient } from "@/lib/supabase/client";
 import { resolveRoleHomeRoute } from "@/lib/auth/roles";
@@ -120,147 +101,80 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <motion.header
-        className="border-b bg-surface"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Activity />
-            </span>
-            <span className="hidden text-sm font-semibold tracking-tight sm:block">
-              AURUM QMS
-            </span>
-          </Link>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/">
-              <ArrowLeft data-icon="inline-start" />
-              Back to home
-            </Link>
-          </Button>
+    <div className="t-rise flex w-full max-w-[400px] flex-col gap-7">
+      <div className="flex flex-col gap-2 text-center">
+        <h1 className="text-3xl font-semibold tracking-[-0.03em]">Sign in</h1>
+        <p className="text-sm text-muted-foreground">
+          Your role decides the workspace, navigation, and actions you see.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-md sm:p-7">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" autoComplete="email" placeholder="name@example.com" disabled={isLoading} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" autoComplete="current-password" placeholder="Your password" disabled={isLoading} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" size="lg" disabled={isLoading} className="mt-2 w-full">
+              {isLoading && <Spinner />}
+              {isLoading ? "Opening workspace…" : "Open workspace"}
+            </Button>
+          </form>
+        </Form>
+      </div>
+
+      <div className="flex flex-col items-center gap-3">
+        <p className="text-xs text-muted-foreground">
+          Try a demo account. Each one fills the shared demo password.
+        </p>
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {demoRoles.map((role) => {
+            const item = roleMeta[role];
+            const Icon = item.icon;
+            return (
+              <button
+                key={role}
+                type="button"
+                onClick={() => fillDemoAccount(role)}
+                className="flex h-8 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-medium text-muted-foreground shadow-xs outline-none transition-[color,border-color,transform] duration-(--duration-quick) hover:border-input hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/35 active:scale-[0.97]"
+              >
+                <Icon className={cn("size-3.5", suiteMeta[item.suite].classes.text)} />
+                {item.shortLabel}
+              </button>
+            );
+          })}
         </div>
-      </motion.header>
+      </div>
 
-      <motion.main
-        className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:py-16"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.38, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <section className="flex flex-col gap-6 pt-2">
-          <Badge variant="outline" className="w-fit gap-2 border-care/30 bg-care/10 text-care">
-            <ShieldCheck />
-            Role-aware access
-          </Badge>
-          <div className="flex flex-col gap-4">
-            <h1 className="max-w-xl font-display text-4xl tracking-[-0.03em] sm:text-5xl">
-              Enter the work that is yours.
-            </h1>
-            <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
-              Sign in to continue with the appointments, queues, records,
-              diagnostics, rooms, or guest requests assigned to your role.
-            </p>
-          </div>
-          <Alert className="max-w-xl bg-card">
-            <CheckCircle2 />
-            <AlertTitle>One account, one clear workspace</AlertTitle>
-            <AlertDescription>
-              Your role determines the navigation, status language, and actions
-              you see after sign-in.
-            </AlertDescription>
-          </Alert>
-          <div className="flex flex-col gap-3 pt-3">
-            <p className="text-sm font-medium">Demo shortcuts</p>
-            <div className="flex flex-wrap gap-2">
-              {demoRoles.map((role) => {
-                const item = roleMeta[role];
-                const Icon = item.icon;
-                const suite = suiteMeta[item.suite];
-                return (
-                  <Button
-                    key={role}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fillDemoAccount(role)}
-                    className="gap-2"
-                  >
-                    <Icon data-icon="inline-start" />
-                    {item.shortLabel}
-                    <span className={cn("size-1.5 rounded-full", suite.classes.solid)} />
-                  </Button>
-                );
-              })}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Demo shortcuts fill the form with the role email and the shared
-              demo password.
-            </p>
-          </div>
-        </section>
-
-        <Card className="border-border shadow-sm">
-          <CardHeader>
-            <CardTitle className="font-display text-3xl tracking-tight">Sign in</CardTitle>
-            <CardDescription>
-              Use your registered email and password to open your workspace.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Mail className="size-4 text-muted-foreground" />
-                        Email address
-                      </FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="name@example.com" disabled={isLoading} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <LockKeyhole className="size-4 text-muted-foreground" />
-                        Password
-                      </FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your password" disabled={isLoading} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" size="lg" disabled={isLoading} className="mt-2 w-full">
-                  {isLoading ? <Spinner data-icon="inline-start" /> : <Activity data-icon="inline-start" />}
-                  {isLoading ? "Opening workspace…" : "Open workspace"}
-                </Button>
-              </form>
-            </Form>
-            <Separator className="my-6" />
-            <p className="text-center text-sm text-muted-foreground">
-              New here?{" "}
-              <Link href="/register" className="font-medium text-primary underline-offset-4 hover:underline">
-                Create a role account
-              </Link>
-            </p>
-          </CardContent>
-        </Card>
-      </motion.main>
+      <p className="text-center text-sm text-muted-foreground">
+        New here?{" "}
+        <Link href="/register" className="font-medium text-foreground underline-offset-4 hover:underline">
+          Create an account
+        </Link>
+      </p>
     </div>
   );
 }

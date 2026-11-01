@@ -40,11 +40,9 @@ import {
   X,
   Building2,
   CalendarDays,
-  Heart,
   User,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -383,13 +381,7 @@ export default function PatientAppointmentsPage() {
 
   if (isLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-background">
-        {/* Header Skeleton */}
-        <header className="bg-card border-b border-border sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4 py-4">
-            <Skeleton className="h-8 w-48" />
-          </div>
-        </header>
+      <div className="min-h-[calc(100svh-4.5rem)] bg-background">
         <div className="max-w-4xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-12 w-full" />
@@ -400,259 +392,7 @@ export default function PatientAppointmentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/patient"
-                className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-              >
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
-                  <Heart className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <span className="font-bold text-xl hidden sm:inline">
-                  HealthCare
-                </span>
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-2 rounded-full">
-                <User className="w-4 h-4" />
-                <span>{profile?.full_name}</span>
-              </div>
-              <Dialog
-                open={showBookDialog}
-                onOpenChange={(open) => {
-                  setShowBookDialog(open);
-                  if (open) {
-                    resetBookingForm();
-                  }
-                }}
-              >
-                <DialogTrigger asChild>
-                  <Button className="bg-primary hover:bg-primary/90 shadow-lg transition-all hover:shadow-xl">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Book Appointment
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-                  <DialogHeader className="pb-4 border-b">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                        <CalendarDays className="w-6 h-6 text-primary-foreground" />
-                      </div>
-                      <div>
-                        <DialogTitle className="text-xl">
-                          Book an Appointment
-                        </DialogTitle>
-                        <DialogDescription>
-                          Select your preferred department, doctor, and time
-                        </DialogDescription>
-                      </div>
-                    </div>
-                  </DialogHeader>
-                  <div className="flex flex-col gap-5 py-4">
-                    {/* Department Selection */}
-                    <div className="flex flex-col gap-2">
-                      <Label className="text-sm font-semibold flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-primary" />
-                        Department
-                      </Label>
-                      <Select
-                        value={selectedDepartment}
-                        onValueChange={setSelectedDepartment}
-                      >
-                        <SelectTrigger className="h-12 border-2 border-border focus:border-primary transition-colors">
-                          <SelectValue placeholder="Choose a department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {departments.map((dept) => (
-                            <SelectItem
-                              key={dept.id}
-                              value={dept.id}
-                              className="py-3"
-                            >
-                              <span className="font-medium">{dept.name}</span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Doctor Selection */}
-                    {selectedDepartment && (
-                      <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <Label className="text-sm font-semibold flex items-center gap-2">
-                          <Stethoscope className="w-4 h-4 text-chart-1" />
-                          Doctor
-                        </Label>
-                        <Select
-                          value={selectedDoctor}
-                          onValueChange={setSelectedDoctor}
-                        >
-                          <SelectTrigger className="h-12 border-2 border-border focus:border-primary transition-colors">
-                            <SelectValue placeholder="Select a doctor" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {doctors.length === 0 ? (
-                              <SelectItem value="none" disabled>
-                                No doctors available in this department
-                              </SelectItem>
-                            ) : (
-                              doctors.map((doc) => (
-                                <SelectItem
-                                  key={doc.id}
-                                  value={doc.id}
-                                  className="py-3"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-chart-1/20 rounded-full flex items-center justify-center">
-                                      <User className="w-4 h-4 text-chart-1" />
-                                    </div>
-                                    <div>
-                                      <p className="font-medium">
-                                        Dr. {doc.profile?.full_name}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {doc.specialization}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-
-                    {/* Date Selection */}
-                    {selectedDoctor && (
-                      <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <Label className="text-sm font-semibold flex items-center gap-2">
-                          <CalendarDays className="w-4 h-4 text-primary" />
-                          Select Date
-                        </Label>
-                        <div className="border-2 border-border rounded-xl p-3 bg-card">
-                          <CalendarPicker
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={setSelectedDate}
-                            disabled={(date) => {
-                              const today = new Date();
-                              today.setHours(0, 0, 0, 0);
-                              return date < today || date.getDay() === 0;
-                            }}
-                            className="mx-auto"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Time Slots */}
-                    {selectedDate && (
-                      <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <Label className="text-sm font-semibold flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-chart-2" />
-                          Available Time Slots
-                        </Label>
-                        {loadingSlots ? (
-                          <div className="flex items-center justify-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                          </div>
-                        ) : availableSlots.length === 0 ? (
-                          <div className="text-center py-8 bg-muted rounded-xl">
-                            <Clock className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                            <p className="text-muted-foreground">
-                              No slots available for this date
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Try selecting another date
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-4 gap-2">
-                            {availableSlots.map((slot) => (
-                              <Button
-                                key={slot.time}
-                                variant={
-                                  selectedTime === slot.time
-                                    ? "default"
-                                    : "outline"
-                                }
-                                size="sm"
-                                disabled={!slot.available}
-                                onClick={() => setSelectedTime(slot.time)}
-                                className={`h-10 text-sm font-medium transition-all ${
-                                  selectedTime === slot.time
-                                    ? "bg-primary border-0 shadow-md"
-                                    : slot.available
-                                      ? "hover:border-primary/50 hover:bg-primary/10"
-                                      : "opacity-40 cursor-not-allowed"
-                                }`}
-                              >
-                                {slot.time}
-                              </Button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Notes */}
-                    {selectedTime && (
-                      <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <Label className="text-sm font-semibold">
-                          Additional Notes (Optional)
-                        </Label>
-                        <Textarea
-                          placeholder="Any specific concerns or notes for the doctor..."
-                          value={appointmentNotes}
-                          onChange={(e) => setAppointmentNotes(e.target.value)}
-                          className="min-h-[100px] border-2 border-border focus:border-primary transition-colors resize-none"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <DialogFooter className="border-t pt-4 gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowBookDialog(false)}
-                      className="flex-1 sm:flex-none"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={bookAppointment}
-                      disabled={
-                        !selectedDoctor ||
-                        !selectedDate ||
-                        !selectedTime ||
-                        booking
-                      }
-                      className="flex-1 sm:flex-none bg-primary hover:bg-primary/90"
-                    >
-                      {booking ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Booking...
-                        </>
-                      ) : (
-                        "Confirm Booking"
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-[calc(100svh-4.5rem)] bg-background">
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
         {/* Page Title */}
         <div className="mb-6">
@@ -663,27 +403,255 @@ export default function PatientAppointmentsPage() {
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-foreground">
-            My Appointments
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your healthcare appointments
-          </p>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-[-0.03em] text-foreground">
+                My Appointments
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Manage your healthcare appointments
+              </p>
+            </div>
+            <Dialog
+              open={showBookDialog}
+              onOpenChange={(open) => {
+                setShowBookDialog(open);
+                if (open) {
+                  resetBookingForm();
+                }
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus />
+                  Book Appointment
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="pb-4 border-b">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                      <CalendarDays className="w-6 h-6 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-xl">
+                        Book an Appointment
+                      </DialogTitle>
+                      <DialogDescription>
+                        Select your preferred department, doctor, and time
+                      </DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+                <div className="flex flex-col gap-5 py-4">
+                  {/* Department Selection */}
+                  <div className="flex flex-col gap-2">
+                    <Label className="text-sm font-semibold flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-primary" />
+                      Department
+                    </Label>
+                    <Select
+                      value={selectedDepartment}
+                      onValueChange={setSelectedDepartment}
+                    >
+                      <SelectTrigger className="h-12 border-2 border-border focus:border-primary transition-colors">
+                        <SelectValue placeholder="Choose a department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((dept) => (
+                          <SelectItem
+                            key={dept.id}
+                            value={dept.id}
+                            className="py-3"
+                          >
+                            <span className="font-medium">{dept.name}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Doctor Selection */}
+                  {selectedDepartment && (
+                    <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <Label className="text-sm font-semibold flex items-center gap-2">
+                        <Stethoscope className="w-4 h-4 text-chart-1" />
+                        Doctor
+                      </Label>
+                      <Select
+                        value={selectedDoctor}
+                        onValueChange={setSelectedDoctor}
+                      >
+                        <SelectTrigger className="h-12 border-2 border-border focus:border-primary transition-colors">
+                          <SelectValue placeholder="Select a doctor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {doctors.length === 0 ? (
+                            <SelectItem value="none" disabled>
+                              No doctors available in this department
+                            </SelectItem>
+                          ) : (
+                            doctors.map((doc) => (
+                              <SelectItem
+                                key={doc.id}
+                                value={doc.id}
+                                className="py-3"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-chart-1/20 rounded-full flex items-center justify-center">
+                                    <User className="w-4 h-4 text-chart-1" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">
+                                      Dr. {doc.profile?.full_name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {doc.specialization}
+                                    </p>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* Date Selection */}
+                  {selectedDoctor && (
+                    <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <Label className="text-sm font-semibold flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 text-primary" />
+                        Select Date
+                      </Label>
+                      <div className="border-2 border-border rounded-xl p-3 bg-card">
+                        <CalendarPicker
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={setSelectedDate}
+                          disabled={(date) => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            return date < today || date.getDay() === 0;
+                          }}
+                          className="mx-auto"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Time Slots */}
+                  {selectedDate && (
+                    <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <Label className="text-sm font-semibold flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-chart-2" />
+                        Available Time Slots
+                      </Label>
+                      {loadingSlots ? (
+                        <div className="flex items-center justify-center py-8">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        </div>
+                      ) : availableSlots.length === 0 ? (
+                        <div className="text-center py-8 bg-muted rounded-xl">
+                          <Clock className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground">
+                            No slots available for this date
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Try selecting another date
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-4 gap-2">
+                          {availableSlots.map((slot) => (
+                            <Button
+                              key={slot.time}
+                              variant={
+                                selectedTime === slot.time
+                                  ? "default"
+                                  : "outline"
+                              }
+                              size="sm"
+                              disabled={!slot.available}
+                              onClick={() => setSelectedTime(slot.time)}
+                              className={`h-10 text-sm font-medium transition-[color,background-color,border-color,box-shadow,translate] ${
+                                selectedTime === slot.time
+                                  ? "bg-primary border-0 shadow-md"
+                                  : slot.available
+                                    ? "hover:border-primary/50 hover:bg-primary/10"
+                                    : "opacity-40 cursor-not-allowed"
+                              }`}
+                            >
+                              {slot.time}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Notes */}
+                  {selectedTime && (
+                    <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <Label className="text-sm font-semibold">
+                        Additional Notes (Optional)
+                      </Label>
+                      <Textarea
+                        placeholder="Any specific concerns or notes for the doctor..."
+                        value={appointmentNotes}
+                        onChange={(e) => setAppointmentNotes(e.target.value)}
+                        className="min-h-[100px] border-2 border-border focus:border-primary transition-colors resize-none"
+                      />
+                    </div>
+                  )}
+                </div>
+                <DialogFooter className="border-t pt-4 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowBookDialog(false)}
+                    className="flex-1 sm:flex-none"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={bookAppointment}
+                    disabled={
+                      !selectedDoctor ||
+                      !selectedDate ||
+                      !selectedTime ||
+                      booking
+                    }
+                    className="flex-1 sm:flex-none bg-primary hover:bg-primary/90"
+                  >
+                    {booking ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Booking...
+                      </>
+                    ) : (
+                      "Confirm Booking"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Appointments Tabs */}
         <Tabs defaultValue="upcoming" className="flex flex-col gap-6">
-          <TabsList className="grid w-full grid-cols-2 bg-card p-1.5 rounded-xl shadow-sm border border-border h-14">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger
               value="upcoming"
-              className="flex items-center justify-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg h-full transition-all font-medium"
+              className="gap-2"
             >
               <CalendarDays className="w-4 h-4" />
               <span>Upcoming ({upcomingAppointments.length})</span>
             </TabsTrigger>
             <TabsTrigger
               value="past"
-              className="flex items-center justify-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg h-full transition-all font-medium"
+              className="gap-2"
             >
               <Clock className="w-4 h-4" />
               <span>Past ({pastAppointments.length})</span>
@@ -733,7 +701,7 @@ export default function PatientAppointmentsPage() {
                     {upcomingAppointments.map((apt, index) => (
                       <div
                         key={apt.id}
-                        className="group flex items-center justify-between p-5 bg-card rounded-2xl border border-border hover:border-primary/50 hover:shadow-sm transition-all duration-300"
+                        className="group flex items-center justify-between p-5 bg-card rounded-2xl border border-border hover:border-primary/50 hover:shadow-sm transition-[color,background-color,border-color,box-shadow,translate] duration-300"
                         style={{ animationDelay: `${index * 100}ms` }}
                       >
                         <div className="flex items-center gap-4">
@@ -779,13 +747,13 @@ export default function PatientAppointmentsPage() {
                             }`}
                           >
                             {apt.status === "confirmed"
-                              ? "✓ Confirmed"
+                              ? "Confirmed"
                               : apt.status}
                           </Badge>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
+                            className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl transition-[color,background-color,border-color,box-shadow,translate]"
                             onClick={() => cancelAppointment(apt.id)}
                           >
                             <X className="w-4 h-4 mr-1" />
@@ -831,7 +799,7 @@ export default function PatientAppointmentsPage() {
                     {pastAppointments.map((apt, index) => (
                       <div
                         key={apt.id}
-                        className="flex items-center justify-between p-5 bg-card rounded-2xl border border-border transition-all duration-300"
+                        className="flex items-center justify-between p-5 bg-card rounded-2xl border border-border transition-[color,background-color,border-color,box-shadow,translate] duration-300"
                         style={{ animationDelay: `${index * 100}ms` }}
                       >
                         <div className="flex items-center gap-4">
@@ -865,7 +833,7 @@ export default function PatientAppointmentsPage() {
                           }`}
                         >
                           {apt.status === "completed"
-                            ? "✓ Completed"
+                            ? "Completed"
                             : apt.status}
                         </Badge>
                       </div>

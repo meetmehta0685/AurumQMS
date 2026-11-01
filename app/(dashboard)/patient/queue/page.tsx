@@ -17,12 +17,9 @@ import {
   Clock,
   Users,
   Stethoscope,
-  Heart,
-  User,
   RefreshCw,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 
@@ -191,12 +188,7 @@ export default function PatientQueuePage() {
 
   if (isLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="bg-card border-b border-border sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4 py-4">
-            <Skeleton className="h-10 w-48" />
-          </div>
-        </header>
+      <div className="min-h-[calc(100svh-4.5rem)] bg-background">
         <div className="max-w-4xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-64 w-full rounded-xl" />
@@ -206,47 +198,7 @@ export default function PatientQueuePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/patient"
-                className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-              >
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
-                  <Heart className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <span className="font-bold text-xl hidden sm:inline">
-                  HealthCare
-                </span>
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="gap-2"
-              >
-                <RefreshCw
-                  className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
-                />
-                Refresh
-              </Button>
-              <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-2 rounded-full">
-                <User className="w-4 h-4" />
-                <span>{profile?.full_name}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-[calc(100svh-4.5rem)] bg-background">
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
         {/* Page Title */}
         <div className="mb-6">
@@ -257,10 +209,26 @@ export default function PatientQueuePage() {
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-foreground">Queue Status</h1>
-          <p className="text-muted-foreground mt-1">
-            Track your position in today&apos;s queue
-          </p>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-[-0.03em] text-foreground">Queue Status</h1>
+              <p className="text-muted-foreground mt-1">
+                Track your position in today&apos;s queue
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="gap-2"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {todayAppointments.length === 0 ? (
@@ -367,7 +335,7 @@ export default function PatientQueuePage() {
                         {position.patientsAhead === 0 ? (
                           <div className="p-4 bg-chart-1/10 rounded-xl border border-chart-1/20 text-center">
                             <p className="text-chart-1 font-semibold">
-                              🎉 You&apos;re next! Please proceed to the
+                              You&apos;re next! Please proceed to the
                               doctor&apos;s cabin.
                             </p>
                           </div>

@@ -192,7 +192,7 @@ export default function PharmaPortalPage() {
 
   if (isLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-[calc(100svh-4.5rem)] bg-background">
         <div className="max-w-7xl mx-auto p-6 flex flex-col gap-6">
           <Skeleton className="h-12 w-64 rounded-xl" />
           <Skeleton className="h-72 w-full rounded-2xl" />
@@ -203,7 +203,7 @@ export default function PharmaPortalPage() {
 
   if (!profile || profile.role !== "pharma") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-[calc(100svh-4.5rem)] bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-card p-6 text-center flex flex-col gap-4">
           <div className="size-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto">
             <AlertCircle className="size-8" />
@@ -221,23 +221,16 @@ export default function PharmaPortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-12">
+    <div className="min-h-[calc(100svh-4.5rem)] bg-background pb-12">
       {/* Unified Top Navigation */}
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8">
         {/* Pharma Hero Banner */}
-        <div className="relative overflow-hidden rounded-xl border border-warning/30 bg-card p-6 sm:p-8 shadow-sm">
-          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="pt-2">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-warning/40 text-warning bg-warning/10 gap-1.5">
-                  <Pill className="size-3.5" />
-                  Pharmacy Dispensary
-                </Badge>
-                <span className="text-xs text-muted-foreground">• Live Fulfillment Console</span>
-              </div>
-              <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-foreground">
-                Pharmacy Dispensary Workstation 💊
+              <h1 className="text-3xl font-semibold tracking-[-0.03em] text-foreground sm:text-4xl">
+                Pharmacy Dispensary Workstation
               </h1>
               <p className="text-sm text-muted-foreground max-w-xl">
                 Process real-time doctor prescriptions, fulfill patient medication orders, track stock quantities, and maintain audit logs.
@@ -414,7 +407,7 @@ export default function PharmaPortalPage() {
                   {items.map((i) => (
                     <div
                       key={i.id}
-                      className="flex items-center justify-between p-4 rounded-2xl border border-border bg-background hover:border-warning/40 transition-all gap-4"
+                      className="flex items-center justify-between p-4 rounded-2xl border border-border bg-background hover:border-warning/40 transition-[color,background-color,border-color,box-shadow,translate] gap-4"
                     >
                       <div className="flex items-center gap-3.5">
                         <div className="size-10 rounded-xl bg-warning/15 text-warning flex items-center justify-center shrink-0">

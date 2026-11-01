@@ -231,7 +231,7 @@ export default function DoctorQueuePage() {
 
   if (isLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-[calc(100svh-4.5rem)] bg-background p-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-64 w-full" />
@@ -241,7 +241,7 @@ export default function DoctorQueuePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-[calc(100svh-4.5rem)] bg-background p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">

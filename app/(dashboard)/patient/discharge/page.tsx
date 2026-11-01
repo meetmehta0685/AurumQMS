@@ -56,7 +56,7 @@ export default function PatientDischargePage() {
 
   if (isLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-[calc(100svh-4.5rem)] bg-background p-4">
         <div className="max-w-5xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-72 w-full" />
@@ -66,7 +66,7 @@ export default function PatientDischargePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-[calc(100svh-4.5rem)] bg-background p-4">
       <div className="max-w-5xl mx-auto flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <Link href="/patient">

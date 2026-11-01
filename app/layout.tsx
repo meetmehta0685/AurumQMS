@@ -1,20 +1,18 @@
 import type { Metadata } from "next";
-import { Manrope, IBM_Plex_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { MotionProvider } from "@/components/ui/motion";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-sans",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-mono",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -31,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${manrope.variable} ${ibmPlexMono.variable} antialiased font-sans`}
+        className={`${geist.variable} ${geistMono.variable} antialiased font-sans`}
       >
         <ThemeProvider
           attribute="class"
@@ -40,7 +38,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <MotionProvider>{children}</MotionProvider>
-          <Toaster />
+          <Toaster position="bottom-right" toastOptions={{ className: "rounded-xl! shadow-md! border-border!" }} />
         </ThemeProvider>
       </body>
     </html>

@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
-import { Activity, ChevronDown, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 
+import { BrandMark } from "@/components/layout/BrandMark";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
@@ -13,7 +11,6 @@ import {
   suiteMeta,
 } from "@/components/layout/role-config";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -42,85 +39,19 @@ function initials(name: string) {
 }
 
 export function RoleHeader({ currentRole }: RoleHeaderProps) {
-  const router = useRouter();
   const { profile, logout } = useAuth();
   const meta = roleMeta[currentRole] ?? roleMeta[getRoleFromPathname("/")];
   const suite = suiteMeta[meta.suite];
   const displayName = profile?.full_name || "Workspace user";
 
   return (
-    <motion.header
-      className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md supports-backdrop-filter:bg-background/75"
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
-        <Link href={meta.home} className="flex min-w-0 items-center gap-3">
-          <motion.span
-            className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground"
-            whileHover={{ rotate: -4, scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Activity />
-          </motion.span>
-          <span className="hidden min-w-0 flex-col sm:flex">
-            <span className="truncate text-sm font-semibold tracking-tight">
-              AURUM QMS
-            </span>
-            <span className="truncate text-xs text-muted-foreground">
-              {suite.label}
-            </span>
-          </span>
-        </Link>
-
-        <div className="h-5 w-px bg-border" />
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-2 px-2.5">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "gap-1.5",
-                  suite.classes.border,
-                  suite.classes.soft,
-                )}
-              >
-                <meta.icon />
-                {meta.shortLabel}
-              </Badge>
-              <ChevronDown className="text-muted-foreground" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-60">
-            <DropdownMenuLabel>Switch workspace</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              {Object.entries(roleMeta).map(([key, item]) => {
-                const ItemIcon = item.icon;
-                const itemSuite = suiteMeta[item.suite];
-                return (
-                  <DropdownMenuItem
-                    key={key}
-                    onClick={() => router.push(item.home)}
-                    className={cn(
-                      "justify-between",
-                      key === currentRole && "bg-accent text-accent-foreground",
-                    )}
-                  >
-                    <span className="flex items-center gap-2">
-                      <ItemIcon />
-                      {item.label}
-                    </span>
-                    <span className={cn("size-1.5 rounded-full", itemSuite.classes.solid)} />
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-lg">
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4 sm:px-6">
+        <BrandMark href={meta.home} compact />
+        <span className={cn("hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium sm:inline-flex", suite.classes.soft)}>
+          <meta.icon className="size-3.5" />
+          {suite.label}
+        </span>
 
         <div className="ml-auto flex items-center gap-1">
           <NotificationBell
@@ -130,22 +61,18 @@ export function RoleHeader({ currentRole }: RoleHeaderProps) {
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Open account menu"
-              >
-                <Avatar className="size-8 rounded-md">
-                  <AvatarFallback className="rounded-md bg-muted text-muted-foreground">
+              <Button variant="ghost" size="icon" className="rounded-full" aria-label="Open account menu">
+                <Avatar className="size-8">
+                  <AvatarFallback className={cn("text-xs font-semibold", suite.classes.solid)}>
                     {initials(displayName) || "Q"}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
-              <DropdownMenuLabel>
-                <span className="block truncate">{displayName}</span>
-                <span className="mt-1 block truncate text-xs font-normal text-muted-foreground">
+              <DropdownMenuLabel className="font-normal">
+                <span className="block truncate font-medium">{displayName}</span>
+                <span className="mt-0.5 block truncate text-xs text-muted-foreground">
                   {profile?.email || meta.label}
                 </span>
               </DropdownMenuLabel>
@@ -163,6 +90,6 @@ export function RoleHeader({ currentRole }: RoleHeaderProps) {
           </DropdownMenu>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 }

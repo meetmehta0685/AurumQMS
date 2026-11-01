@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Bell,
   CalendarCheck,
-  ConciergeBell,
   Sparkles,
   Search,
 } from "lucide-react";
@@ -219,25 +217,13 @@ export default function GuestPortalPage() {
       {/* Unified Top Navigation */}
       <RoleHeader currentRole="guest" />
 
-      <motion.main
-        className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.38, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-      >
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 flex flex-col gap-8 t-page">
         {/* Luxury Hospitality Hero */}
-        <div className="relative overflow-hidden rounded-xl border border-stay/30 bg-card p-6 sm:p-8 shadow-sm">
-          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="pt-2">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-stay/40 text-stay bg-stay/10 gap-1.5">
-                  <ConciergeBell className="size-3.5" />
-                  Luxury Guest Suite
-                </Badge>
-                <span className="text-xs text-muted-foreground">• Hospitality Concierge</span>
-              </div>
-              <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-foreground">
-                Welcome to Aurum Stay ✨
+              <h1 className="text-3xl font-semibold tracking-[-0.03em] text-foreground sm:text-4xl">
+                Welcome to Aurum Stay
               </h1>
               <p className="text-sm text-muted-foreground max-w-xl">
                 Manage your stay preferences, check reservation status, request housekeeping amenities, and communicate with the concierge.
@@ -431,7 +417,7 @@ export default function GuestPortalPage() {
             </Card>
           </div>
         )}
-      </motion.main>
+      </main>
     </div>
   );
 }

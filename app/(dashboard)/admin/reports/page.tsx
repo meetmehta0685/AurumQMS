@@ -235,7 +235,7 @@ export default function AdminReportsPage() {
 
   if (isLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-[calc(100svh-4.5rem)] bg-background p-4">
         <div className="max-w-6xl mx-auto flex flex-col gap-4">
           <Skeleton className="h-10 w-32" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -263,7 +263,7 @@ export default function AdminReportsPage() {
       : 0;
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-[calc(100svh-4.5rem)] bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
@@ -410,7 +410,7 @@ export default function AdminReportsPage() {
                 <div className="flex-1">
                   <div className="h-4 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-chart-1 transition-all duration-500"
+                      className="h-full bg-chart-1 transition-[color,background-color,border-color,box-shadow,translate] duration-500"
                       style={{ width: `${completionRate}%` }}
                     />
                   </div>
@@ -441,7 +441,7 @@ export default function AdminReportsPage() {
                 <div className="flex-1">
                   <div className="h-4 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-destructive transition-all duration-500"
+                      className="h-full bg-destructive transition-[color,background-color,border-color,box-shadow,translate] duration-500"
                       style={{ width: `${cancellationRate}%` }}
                     />
                   </div>

@@ -3,28 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import {
-  Activity,
-  ArrowRight,
-  BedDouble,
-  Check,
-  ChevronRight,
-  HeartPulse,
-} from "lucide-react";
+import { ArrowRight, BedDouble, Check, HeartPulse } from "lucide-react";
 
+import { BrandMark } from "@/components/layout/BrandMark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { roleMeta, suiteMeta } from "@/components/layout/role-config";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types";
 
@@ -114,32 +98,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <motion.header
-        className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md supports-backdrop-filter:bg-background/75"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
-          <Link href="/" className="flex min-w-0 items-center gap-3">
-            <motion.span
-              className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground"
-              whileHover={{ rotate: -4, scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Activity />
-            </motion.span>
-            <span className="hidden min-w-0 flex-col sm:flex">
-              <span className="truncate text-sm font-semibold tracking-tight">
-                AURUM QMS
-              </span>
-              <span className="truncate text-xs text-muted-foreground">
-                Care + Stay
-              </span>
-            </span>
-          </Link>
-          <div className="ml-auto flex items-center gap-1">
+      <header className="sticky top-0 z-40 border-b border-transparent bg-background/80 backdrop-blur-lg">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
+          <BrandMark compact />
+          <div className="ml-auto flex items-center gap-1.5">
             <ThemeToggle />
             <Button asChild variant="ghost" size="sm">
               <Link href="/login">Sign in</Link>
@@ -149,200 +111,203 @@ export default function Home() {
             </Button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      <main className="mx-auto flex max-w-7xl flex-col gap-20 px-4 py-10 sm:px-6 lg:py-16">
-        <motion.section
-          className="grid items-start gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] xl:gap-16"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.44, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+      <main className="mx-auto flex max-w-6xl flex-col gap-24 px-4 pt-14 pb-24 sm:px-6 lg:gap-32 lg:pt-24">
+        <section className="flex flex-col items-center text-center">
+          <h1
+            className="t-rise max-w-4xl text-5xl leading-[1.02] font-semibold tracking-[-0.035em] sm:text-6xl lg:text-7xl"
+            style={{ "--t-i": 0 } as React.CSSProperties}
+          >
+            One operational rail for{" "}
+            <span className="text-care">care</span> and{" "}
+            <span className="text-stay">stay</span>.
+          </h1>
+          <p
+            className="t-rise mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground"
+            style={{ "--t-i": 1 } as React.CSSProperties}
+          >
+            Appointments, queues, diagnostics, pharmacy, rooms, and guest
+            service in one role-aware workspace. Every role sees its next
+            action, and every status reads the same way.
+          </p>
+          <div
+            className="t-rise mt-9 flex flex-wrap justify-center gap-3"
+            style={{ "--t-i": 2 } as React.CSSProperties}
+          >
+            <Button asChild size="lg">
+              <Link href="/login">
+                Open workspace
+                <ArrowRight />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/register">Create an account</Link>
+            </Button>
+          </div>
+        </section>
+
+        <section
+          className="t-rise -mt-8 flex flex-col gap-5 lg:-mt-14"
+          style={{ "--t-i": 3 } as React.CSSProperties}
+          aria-labelledby="workspace-picker"
         >
-          <div className="flex flex-col gap-7 pt-2">
-            <Badge variant="outline" className="w-fit gap-2 border-care/30 bg-care/10 text-care">
-              <Activity />
-              AURUM QMS
-            </Badge>
-            <div className="flex flex-col gap-5">
-              <h1 className="max-w-3xl font-display text-5xl leading-[0.98] tracking-[-0.03em] sm:text-6xl lg:text-7xl">
-                One operational rail for care and stay.
-              </h1>
-              <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                Keep the next action visible across appointments, queues,
-                diagnostics, pharmacy, rooms, and guest service. AURUM QMS
-                gives every role the context it needs to move work
-                forward.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <Link href="/login">
-                  Open workspace
-                  <ArrowRight data-icon="inline-end" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="/register">Create a role account</Link>
-              </Button>
-            </div>
-            <div className="grid max-w-xl grid-cols-2 gap-x-8 gap-y-5 border-t pt-6 sm:grid-cols-4">
-              <div className="flex flex-col gap-1">
-                <span className="font-display text-2xl">7</span>
-                <span className="text-xs text-muted-foreground">role workspaces</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-display text-2xl">2</span>
-                <span className="text-xs text-muted-foreground">operating suites</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-display text-2xl">1</span>
-                <span className="text-xs text-muted-foreground">shared status language</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-display text-2xl">24/7</span>
-                <span className="text-xs text-muted-foreground">web access</span>
-              </div>
-            </div>
+          <h2 id="workspace-picker" className="sr-only">
+            Choose a workspace
+          </h2>
+          <div
+            role="radiogroup"
+            aria-label="Choose a role workspace"
+            className="mx-auto flex w-full max-w-max gap-1 overflow-x-auto rounded-full bg-secondary p-1 [scrollbar-width:none]"
+          >
+            {roleOrder.map((role) => {
+              const item = roleMeta[role];
+              const Icon = item.icon;
+              const active = role === selectedRole;
+              return (
+                <button
+                  key={role}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => setSelectedRole(role)}
+                  className={cn(
+                    "relative flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium outline-none transition-colors duration-(--duration-quick) focus-visible:ring-[3px] focus-visible:ring-ring/35",
+                    active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="role-pill"
+                      className="absolute inset-0 rounded-full bg-card shadow-xs"
+                      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                  )}
+                  <Icon className={cn("relative size-4", active && suiteMeta[item.suite].classes.text)} />
+                  <span className="relative">{item.shortLabel}</span>
+                </button>
+              );
+            })}
           </div>
 
-          <Card className="gap-0 overflow-hidden border-border py-0 shadow-sm">
-            <CardHeader className="gap-4 border-b bg-surface p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                  <CardTitle className="text-lg">Choose a workspace</CardTitle>
-                  <CardDescription>
-                    Every role gets the same clear operational grammar.
-                  </CardDescription>
-                </div>
-                <Badge variant="secondary">Interactive</Badge>
-              </div>
-              <ToggleGroup
-                type="single"
-                value={selectedRole}
-                onValueChange={(value) => {
-                  if (value) setSelectedRole(value as UserRole);
-                }}
-                variant="outline"
-                spacing={1}
-                className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
-                aria-label="Choose a role workspace"
+          <div className="overflow-hidden rounded-3xl border border-border/80 bg-card shadow-md">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={selectedRole}
+                className="grid gap-10 p-6 sm:p-10 lg:grid-cols-[1fr_1.1fr] lg:p-14"
+                initial={{ opacity: 0, filter: "blur(2px)" }}
+                animate={{ opacity: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, filter: "blur(2px)" }}
+                transition={{ duration: 0.15, ease: "easeInOut" }}
               >
-                {roleOrder.map((role) => {
-                  const item = roleMeta[role];
-                  const Icon = item.icon;
-                  return (
-                    <ToggleGroupItem
-                      key={role}
-                      value={role}
-                      aria-label={item.label}
-                      className="h-auto justify-start gap-2 px-3 py-2.5 text-left"
-                    >
-                      <Icon />
-                      <span className="truncate">{item.shortLabel}</span>
-                    </ToggleGroupItem>
-                  );
-                })}
-              </ToggleGroup>
-            </CardHeader>
-            <CardContent className="p-6">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={selectedRole}
-                  className="flex flex-col gap-6"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <div className="flex items-start gap-3">
-                    <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-md", suite.classes.soft)}>
-                      <RoleIcon />
+                <div className="flex flex-col justify-between gap-8">
+                  <div className="flex flex-col gap-4">
+                    <span className={cn("gloss flex size-11 items-center justify-center rounded-xl", suite.classes.solid)} style={{ "--gloss-tint": `var(--${selectedMeta.suite})` } as React.CSSProperties}>
+                      <RoleIcon className="size-5" />
                     </span>
-                    <div className="flex min-w-0 flex-col gap-1">
-                      <Badge variant="outline" className={cn("w-fit", suite.classes.border, suite.classes.soft)}>
-                        {suite.label}
-                      </Badge>
-                      <h2 className="text-xl font-semibold tracking-tight">{selectedDetails.title}</h2>
-                      <p className="text-sm leading-relaxed text-muted-foreground">
-                        {selectedDetails.description}
-                      </p>
-                    </div>
+                    <h3 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
+                      {selectedDetails.title}
+                    </h3>
+                    <p className="max-w-md text-base leading-relaxed text-muted-foreground">
+                      {selectedDetails.description}
+                    </p>
                   </div>
-                  <Separator />
-                  <ul className="grid gap-3 sm:grid-cols-2">
-                    {selectedDetails.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-sm">
-                        <Check className="text-care" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button asChild className="w-full">
+                  <Button asChild variant="outline" className="w-fit">
                     <Link href={selectedMeta.home}>
-                      Explore {selectedMeta.shortLabel} workspace
-                      <ChevronRight data-icon="inline-end" />
+                      Open the {selectedMeta.shortLabel.toLowerCase()} workspace
+                      <ArrowRight />
                     </Link>
                   </Button>
-                </motion.div>
-              </AnimatePresence>
-            </CardContent>
-          </Card>
-        </motion.section>
+                </div>
 
-        <section className="flex flex-col gap-8">
-          <div className="flex max-w-2xl flex-col gap-3">
-            <p className="text-sm font-medium text-care">Built around the work</p>
-            <h2 className="font-display text-4xl tracking-[-0.02em] sm:text-5xl">
+                <ul className="flex flex-col gap-2 self-center">
+                  {selectedDetails.features.map((feature, index) => (
+                    <li
+                      key={feature}
+                      className="t-rise flex items-center gap-3 rounded-2xl border border-border/80 bg-background px-4 py-3.5"
+                      style={{ "--t-i": index } as React.CSSProperties}
+                    >
+                      <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-full", suite.classes.soft)}>
+                        <Check className="size-3.5" strokeWidth={3} />
+                      </span>
+                      <span className="text-[15px] font-medium">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </section>
+
+        <section className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          <div className="flex flex-col gap-4">
+            <h2 className="text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">
               Clear roles. Shared rhythm.
             </h2>
-            <p className="text-base leading-relaxed text-muted-foreground">
+            <p className="max-w-md text-base leading-relaxed text-muted-foreground">
               Clinical and hospitality teams do different work, but both need
               the same thing: a trustworthy view of what is ready, what is
               waiting, and what happens next.
             </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             {suitePrinciples.map((item) => {
               const Icon = item.icon;
               const itemSuite = suiteMeta[item.suite];
+              const roles = roleOrder.filter((role) => roleMeta[role].suite === item.suite);
               return (
-                <Card key={item.suite} className="border-border shadow-sm">
-                  <CardHeader>
-                    <span className={cn("flex size-10 items-center justify-center rounded-md", itemSuite.classes.soft)}>
-                      <Icon />
+                <div
+                  key={item.suite}
+                  className="flex flex-col gap-5 rounded-2xl border border-border/80 bg-card p-6 shadow-xs"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={cn("flex size-9 items-center justify-center rounded-lg", itemSuite.classes.soft)}>
+                      <Icon className="size-[18px]" />
                     </span>
-                    <CardTitle className="pt-2">{item.title}</CardTitle>
-                    <CardDescription className="max-w-lg leading-relaxed">
-                      {item.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="grid gap-3 text-sm text-muted-foreground">
-                      {item.points.map((point) => (
-                        <li key={point} className="flex items-center gap-2">
-                          <span className={cn("size-1.5 rounded-full", itemSuite.classes.solid)} />
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
+                    <h3 className="text-lg font-semibold">{item.title}</h3>
+                  </div>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {item.description}
+                  </p>
+                  <ul className="flex flex-col gap-2.5 text-sm">
+                    {item.points.map((point) => (
+                      <li key={point} className="flex items-center gap-2.5">
+                        <span className={cn("size-1.5 rounded-full", itemSuite.classes.solid)} />
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto flex flex-wrap gap-1.5 border-t border-border/70 pt-4">
+                    {roles.map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => {
+                          setSelectedRole(role);
+                          document.getElementById("workspace-picker")?.parentElement?.scrollIntoView({ block: "center" });
+                        }}
+                        className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors duration-(--duration-quick) hover:border-input hover:text-foreground"
+                      >
+                        {roleMeta[role].shortLabel}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               );
             })}
           </div>
         </section>
       </main>
 
-      <footer className="border-t bg-surface">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-7 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div className="flex items-center gap-2">
-            <Activity className="text-care" />
-            <span className="font-medium text-foreground">AURUM QMS</span>
+      <footer className="border-t border-border/70">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="flex items-center gap-3">
+            <BrandMark />
             <span>© {new Date().getFullYear()}</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
-            <Link href="/terms" className="hover:text-foreground">Terms</Link>
+          <div className="flex items-center gap-5">
+            <Link href="/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
+            <Link href="/terms" className="transition-colors hover:text-foreground">Terms</Link>
           </div>
         </div>
       </footer>

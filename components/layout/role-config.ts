@@ -57,7 +57,7 @@ export const suiteMeta = {
     description: "Guest experience, rooms, and service flow",
     classes: {
       text: "text-stay",
-      soft: "bg-stay/10 text-stay-foreground",
+      soft: "bg-stay/10 text-stay",
       border: "border-stay/30",
       solid: "bg-stay text-stay-foreground",
     },
